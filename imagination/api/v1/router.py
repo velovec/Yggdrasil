@@ -13,7 +13,7 @@
 
 import routes
 
-from imagination.api.v1 import test
+from imagination.api.v1 import actions
 from imagination.common import wsgi
 
 
@@ -23,10 +23,14 @@ class API(wsgi.Router):
         return cls(routes.Mapper())
 
     def __init__(self, mapper):
-        test_resource = test.create_resource()
-        mapper.connect('/test/{test_id}',
-                       controller=test_resource,
-                       action='get',
+        actions_resource = actions.create_resource()
+        mapper.connect('/actions/generate',
+                       controller=actions_resource,
+                       action='generate_action',
+                       conditions={'method': ['GET']}, path='')
+        mapper.connect('/actions/{task_id}',
+                       controller=actions_resource,
+                       action='get_results',
                        conditions={'method': ['GET']}, path='')
 
         super(API, self).__init__(mapper)

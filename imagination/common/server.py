@@ -17,6 +17,12 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_messaging import target
+from oslo_utils import timeutils
+
+
+from imagination.db import models
+from imagination.db import session
+
 
 CONF = cfg.CONF
 
@@ -27,8 +33,32 @@ LOG = logging.getLogger(__name__)
 
 class ResultEndpoint(object):
     @staticmethod
-    def process_result(context, result, *args, **kwargs):
-        print result, args, kwargs
+    def process_result(context, result, task_id=None):
+
+        unit = session.get_session()
+        action = unit.query(models.Task).filter_by(id=task_id).first()
+        action.finished = timeutils.utcnow()
+        action.result = result
+
+        num_errors = unit.query(models.Status)\
+            .filter_by(level='error', task_id=task_id).count()
+        num_warnings = unit.query(models.Status)\
+            .filter_by(level='warning', task_id=task_id).count()
+
+        final_status_text = "Action finished"
+        if num_errors:
+            final_status_text += " with errors"
+        elif num_warnings:
+            final_status_text += " with warnings"
+
+        status = models.Status()
+        status.task_id = task_id
+        status.text = final_status_text
+        status.level = 'info'
+
+        action.statuses.append(status)
+        action.save(unit)
+
 
 
 def _prepare_rpc_service(server_id):

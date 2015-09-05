@@ -23,6 +23,7 @@ from oslo_serialization import jsonutils
 
 from imagination.common.helpers import token_sanitizer
 from imagination.common import rpc
+from imagination.engine import actions as eng_actions
 
 CONF = cfg.CONF
 
@@ -54,7 +55,7 @@ class TaskProcessingEndpoint(object):
     @classmethod
     def handle_task(cls, context, task):
         result = cls.execute(task)
-        rpc.api().process_result(result, task['id'])
+        rpc.api().process_result(result, task_id=task['id'])
 
     @staticmethod
     def execute(task):
@@ -80,16 +81,17 @@ class TaskExecutor(object):
     def action(self):
         return self._action
 
-    @property
-    def model(self):
-        return self._model
-
     def __init__(self, task):
         self._action = task.get('action')
-        self._model = task.get('model')
-        self._token = task['token']
-        self._tenant_id = task['tenant_id']
-        self._task_data = task
+        self._token = task.get('token')
 
     def execute(self):
-        return self._task_data
+        if hasattr(eng_actions, self._action['object_id']):
+            instance = getattr(eng_actions, self._action['object_id'])()
+            if hasattr(instance, self._action['method']):
+                return getattr(instance, self._action['method'])(**self._action['args'])
+        return {
+            'error': "Action '{object_id}:{method}' doesn't exists".format(
+                **self._action
+            )
+        }

@@ -12,11 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 import os
 import sys
 
 import eventlet
+
 
 if os.name == 'nt':
     eventlet.monkey_patch(os=False)
@@ -29,16 +29,13 @@ root = os.path.join(os.path.abspath(__file__), os.pardir, os.pardir, os.pardir)
 if os.path.exists(os.path.join(root, 'imagination', '__init__.py')):
     sys.path.insert(0, root)
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import service
 
-from imagination.common import app_loader
 from imagination.common import config
-from imagination.common import server
-from imagination.common import wsgi
+from imagination.common import engine
 
-CONF = cfg.CONF
+CONF = config.CONF
 
 
 def main():
@@ -47,13 +44,7 @@ def main():
 
         logging.setup(CONF, 'imagination')
         launcher = service.ServiceLauncher(CONF)
-
-        app = app_loader.load_paste_app('imagination')
-        port, host = (CONF.bind_port, CONF.bind_host)
-
-        launcher.launch_service(wsgi.Service(app, port, host))
-
-        launcher.launch_service(server.get_rpc_service())
+        launcher.launch_service(engine.get_rpc_service())
 
         launcher.wait()
     except RuntimeError as e:

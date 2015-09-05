@@ -1,4 +1,3 @@
-#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -11,29 +10,22 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_log import log as logging
-from imagination.common import wsgi
-from imagination.common import rpc
-
-LOG = logging.getLogger(__name__)
+from oslo_serialization import jsonutils
+import sqlalchemy as sa
+from sqlalchemy.dialects import mysql
 
 
-class Controller(object):
-
-    def get(self, request, test_id):
-        rpc.engine().handle_task({
-            'action': 'test',
-            'model': 'Test',
-            'test_id': test_id,
-            'token': '',
-            'tenant_id': '',
-            'id': 'qwjehqkjwhekjqw'
-        })
-        return {}
-
-    def post(self, request, test_id, body):
-        return {}
+def LargeBinary():
+    return sa.LargeBinary().with_variant(mysql.LONGBLOB(), 'mysql')
 
 
-def create_resource():
-    return wsgi.Resource(Controller())
+class JsonBlob(sa.TypeDecorator):
+    impl = sa.Text
+
+    def process_bind_param(self, value, dialect):
+        return jsonutils.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return jsonutils.loads(value)
+        return None

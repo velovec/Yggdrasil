@@ -24,10 +24,10 @@ class API(wsgi.Router):
 
     def __init__(self, mapper):
         actions_resource = actions.create_resource()
-        mapper.connect('/actions/generate',
+        mapper.connect('/actions/',
                        controller=actions_resource,
-                       action='generate_action',
-                       conditions={'method': ['GET']}, path='')
+                       action='create_action',
+                       conditions={'method': ['POST']}, path='')
         mapper.connect('/actions/{task_id}',
                        controller=actions_resource,
                        action='get_results',

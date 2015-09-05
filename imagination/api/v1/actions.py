@@ -38,16 +38,20 @@ class Controller(object):
         LOG.error(msg)
         raise exc.HTTPNotFound(msg)
 
-    def generate_action(self, request):
-        LOG.debug('Action:Generate')
+    def create_action(self, request):
+        LOG.debug('Action:Create')
 
-        unit = db_session.get_session()
-        task_id = actions.ActionServices.submit_task(
-            'test_action', 'TestClass', {'test_param': 'test_value'},
-            'test_token', unit)
+        try:
+            unit = db_session.get_session()
+            task_id = actions.ActionServices.submit_task(
+                request.json_body['action'], request.json_body['object_id'],
+                request.json_body['args'], 'test_token', unit)
 
-        return {'action_id': task_id}
-
+            return {'action_id': task_id}
+        except KeyError:
+            return {
+                'error': 'Unable to create action'
+            }
 
 def create_resource():
     return wsgi.Resource(Controller())

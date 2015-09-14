@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import uuid
-
 from imagination.common import rpc
 from imagination.db import models
 from imagination.db.services import actions as actions_db

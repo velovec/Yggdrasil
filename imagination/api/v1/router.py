@@ -17,7 +17,7 @@ from imagination.api.v1 import actions
 from imagination.common import wsgi
 
 
-class API(wsgi.Router):
+class APIv1(wsgi.Router):
     @classmethod
     def factory(cls, global_conf, **local_conf):
         return cls(routes.Mapper())
@@ -33,4 +33,4 @@ class API(wsgi.Router):
                        action='get_results',
                        conditions={'method': ['GET']}, path='')
 
-        super(API, self).__init__(mapper)
+        super(APIv1, self).__init__(mapper)

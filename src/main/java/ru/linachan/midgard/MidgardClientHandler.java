@@ -1,14 +1,10 @@
 package ru.linachan.midgard;
 
-import com.google.api.services.storage.model.StorageObject;
 import com.google.common.base.Joiner;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import ru.linachan.jormungand.JormungandCore;
-import ru.linachan.util.Pair;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
-import ru.linachan.midgard.handler.api.*;
+// import ru.linachan.midgard.handler.api.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -17,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({"unchecked", "unused"})
-public class MidgardClientHandler implements Runnable{
+public class MidgardClientHandler implements Runnable {
 
     private YggdrasilCore core;
     private Socket clientSocket;
@@ -79,9 +75,7 @@ public class MidgardClientHandler implements Runnable{
     }
 
     private void setUpHandlers() {
-        handlers.put("^/api/storage/(.*?)$", new StorageAPI());
-        handlers.put("^/api/tvdb/(.*?)$", new TvDBAPI());
-        handlers.put("^/api/anime/(.*?)$", new AnimeAPI());
+        // handlers.put("^/api/storage/(.*?)$", new StorageAPI());
     }
 
     private MidgardHTTPResponse handleRequest(MidgardHTTPRequest request) {

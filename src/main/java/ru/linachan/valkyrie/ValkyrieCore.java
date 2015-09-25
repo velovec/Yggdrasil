@@ -1,12 +1,11 @@
 package ru.linachan.valkyrie;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.ConnectionParameters;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
 
 public class ValkyrieCore {
 
@@ -19,31 +18,54 @@ public class ValkyrieCore {
 
         this.core.logInfo("Initializing Valkyrie Interaction System...");
 
-        String rabbitUser = this.core.getConfig("ValkyrieRabbitMQUser", "valkyrie");
-        String rabbitPassword = this.core.getConfig("ValkyrieRabbitMQPassword", "valkyriePassword");
+        String rabbitHost = this.core.getConfig("ValkyrieRabbitMQHost", "127.0.0.1");
+        Integer rabbitPort = Integer.parseInt(this.core.getConfig("ValkyrieRabbitMQPort", "5572"));
+
         String rabbitVirtualHost = this.core.getConfig("ValkyrieRabbitMQVirtualHost", "/");
 
-        ConnectionParameters rabbitConnectionParameters = new ConnectionParameters();
+        String rabbitUser = this.core.getConfig("ValkyrieRabbitMQUser", "valkyrie");
+        String rabbitPassword = this.core.getConfig("ValkyrieRabbitMQPassword", "valkyriePassword");
 
-        rabbitConnectionParameters.setUsername(rabbitUser);
-        rabbitConnectionParameters.setPassword(rabbitPassword);
-        rabbitConnectionParameters.setVirtualHost(rabbitVirtualHost);
+        this.rabbitConnectionFactory = new ConnectionFactory();
 
-        this.rabbitConnectionFactory = new ConnectionFactory(rabbitConnectionParameters);
+        this.rabbitConnectionFactory.setUsername(rabbitUser);
+        this.rabbitConnectionFactory.setPassword(rabbitPassword);
+        this.rabbitConnectionFactory.setVirtualHost(rabbitVirtualHost);
+        this.rabbitConnectionFactory.setHost(rabbitHost);
+        this.rabbitConnectionFactory.setPort(rabbitPort);
+
     }
 
-    public Connection getRabbitMQConnection() throws IOException {
-        String rabbitHost = this.core.getConfig("ValkyrieRabbitMQHost", "127.0.0.1");
-        String rabbitPort = this.core.getConfig("ValkyrieRabbitMQPort", "5572");
-
-        return this.rabbitConnectionFactory.newConnection(rabbitHost, Integer.parseInt(rabbitPort));
-    }
-
-    public Channel getRabbitMQChannel(Connection connection) throws IOException {
-        return connection.createChannel();
+    public ValkyrieMessaging getMessenger() {
+        try {
+            return new ValkyrieMessaging(this.core, this.rabbitConnectionFactory.newConnection());
+        } catch (TimeoutException | IOException e) {
+            this.core.logException(e);
+            return null;
+        }
     }
 
     public boolean executeTests() {
-        return true;
+        try {
+            ValkyrieMessaging msg = getMessenger();
+
+            if (msg != null) {
+                msg.declareQueue("test_queue");
+                msg.declareExchange("test_exchange");
+                msg.bindQueue("test_queue", "test_exchange", "test_route");
+
+                byte[] test_message = "ValkyrieTestMessage".getBytes();
+
+                msg.publishMessage("test_exchange", "test_route", true, test_message);
+                Boolean res = (Arrays.equals(msg.getResponse("test_queue", true).getBody(), test_message));
+
+                msg.closeConnections();
+
+                return res;
+            }
+        } catch (Exception e) {
+            core.logException(e);
+        }
+        return false;
     }
 }

@@ -74,7 +74,7 @@ public class YggdrasilCore {
 
     public void logException(Exception exc) {
         StackTraceElement[] stack_trace = exc.getStackTrace();
-        this.logger.severe("##### " + exc.getClass().getSimpleName() + " #####");
+        this.logger.severe("##### " + exc.getClass().getSimpleName() + " :: " + exc.getMessage() + " #####");
         for (StackTraceElement line : stack_trace) {
             this.logger.severe("File " + line.getFileName() + " in method " + line.getMethodName() + " at line " + line.getLineNumber());
         }

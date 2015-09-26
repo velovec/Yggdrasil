@@ -16,7 +16,7 @@ public class UrdCore {
     private String cacheFilePath;
     private File cacheFile;
     private Semaphore cacheLock;
-    private Map<String, String> cacheMap = new HashMap<String, String>();
+    private Map<String, String> cacheMap = new HashMap<>();
 
     public UrdCore(YggdrasilCore yggdrasilCore) {
         this.core = yggdrasilCore;
@@ -58,20 +58,26 @@ public class UrdCore {
         return totalSize;
     }
 
+    private void checkEqual(int source, int target) {
+        if (source != target)
+            core.logWarning("UrdCore: " + String.valueOf(source) + " bytes read instead of " + String.valueOf(target));
+    }
+
     private void readCacheFile() {
         if (cacheFile.exists() && cacheFile.isFile()) {
             if (lock()) {
                 try {
                     FileInputStream storageStream = new FileInputStream(cacheFile);
                     byte[] RAW_MAGIC_HEADER = new byte[MAGIC_HEADER.length];
-                    storageStream.read(RAW_MAGIC_HEADER);
+                    checkEqual(storageStream.read(RAW_MAGIC_HEADER), RAW_MAGIC_HEADER.length);
+
                     if (Arrays.equals(RAW_MAGIC_HEADER, MAGIC_HEADER)) {
                         byte[] storageLengthByte = new byte[4];
-                        storageStream.read(storageLengthByte);
+                        checkEqual(storageStream.read(storageLengthByte), 4);
                         Integer storageLength = ByteBuffer.wrap(storageLengthByte).getInt();
 
                         byte[] storageArray = new byte[storageLength];
-                        storageStream.read(storageArray);
+                        checkEqual(storageStream.read(storageArray), storageLength);
                         ByteBuffer storageBuffer = ByteBuffer.wrap(storageArray);
 
                         Integer storageBytesRead = 0;
@@ -90,17 +96,17 @@ public class UrdCore {
                             storageBytesRead += 8 + keyLength + valueLength;
                         }
                     } else {
-                        core.logWarning("YggdrasilDataStorage: Incorrect storage file");
+                        core.logWarning("UrdCore: Incorrect storage file");
                     }
                 } catch (FileNotFoundException e) {
-                    core.logWarning("YggdrasilDataStorage: Unable to locate storage file: " + e.getMessage());
+                    core.logWarning("UrdCore: Unable to locate storage file: " + e.getMessage());
                 } catch (IOException e) {
-                    core.logWarning("YggdrasilDataStorage: Unable to read storage file: " + e.getMessage());
+                    core.logWarning("UrdCore: Unable to read storage file: " + e.getMessage());
                 }
             }
             unlock();
         } else {
-            core.logInfo("YggdrasilDataStorage: Initializing empty storage...");
+            core.logInfo("UrdCore: Initializing empty storage...");
             initializeCacheStorage();
         }
     }
@@ -129,14 +135,14 @@ public class UrdCore {
 
                     storageStream.close();
                 } catch (FileNotFoundException e) {
-                    core.logWarning("YggdrasilDataStorage: Unable to locate storage at: " + e.getMessage());
+                    core.logWarning("UrdCore: Unable to locate storage at: " + e.getMessage());
                 } catch (IOException e) {
-                    core.logWarning("YggdrasilDataStorage: Unable to write storage data to file: " + e.getMessage());
+                    core.logWarning("UrdCore: Unable to write storage data to file: " + e.getMessage());
                 }
             }
             unlock();
         } else {
-            core.logWarning("YggdrasilDataStorage: Unable to write storage at: " + cacheFilePath);
+            core.logWarning("UrdCore: Unable to write storage at: " + cacheFilePath);
         }
     }
 

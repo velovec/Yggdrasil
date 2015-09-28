@@ -53,6 +53,10 @@ public class JormungandCore {
         return subProcessID;
     }
 
+    public void shutdownJormungand() {
+        processExecutor.shutdownJormungand();
+    }
+
     public boolean execute_tests() {
         Long pid = scheduleExecution("ls", "-l");
 

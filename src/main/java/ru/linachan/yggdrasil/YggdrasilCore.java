@@ -1,5 +1,6 @@
 package ru.linachan.yggdrasil;
 
+import ru.linachan.alfheim.AlfheimCore;
 import ru.linachan.asgard.AsgardCore;
 import ru.linachan.fenrir.FenrirCore;
 import ru.linachan.jormungand.JormungandCore;
@@ -23,6 +24,7 @@ public class YggdrasilCore {
     private FenrirCore auth;
     private JormungandCore executor;
     private UrdCore cache;
+    private AlfheimCore builder;
 
     private Properties cfg;
 
@@ -47,6 +49,7 @@ public class YggdrasilCore {
         this.auth       = new FenrirCore(this);     // Instantiate main authorization system
         this.executor   = new JormungandCore(this); // Instantiate executor system
         this.cache      = new UrdCore(this);        // Instantiate cache system
+        this.builder    = new AlfheimCore(this);    // Instantiate image builder
     }
 
     private void configLogger() {
@@ -102,7 +105,11 @@ public class YggdrasilCore {
             webServerThread.join();
             agentServerThread.join();
 
+        } else {
+            shutdownYggdrasil();
         }
+
+        executor.shutdownJormungand();
 
         this.logInfo("Yggdrasil is down...");
     }
@@ -128,7 +135,10 @@ public class YggdrasilCore {
         boolean cacheOk = this.cache.execute_tests();
         logInfo("UrdCore: " + ((cacheOk) ? "PASS" : "FAIL"));
 
-        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk) {
+        boolean builderOk = this.builder.execute_tests();
+        logInfo("AlfheimCore: " + ((builderOk) ? "PASS" : "FAIL"));
+
+        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk) {
             logInfo("YggdrasilCore: Self-diagnostic successfully completed");
             return true;
         } else {
@@ -162,11 +172,13 @@ public class YggdrasilCore {
         return broker;
     }
 
-    public JormungandCore getExecutiorManager() {
+    public JormungandCore getExecutionManager() {
         return executor;
     }
 
     public UrdCore getCacheManager() {
         return cache;
     }
+
+    public AlfheimCore getImageBuilder() { return builder; }
 }

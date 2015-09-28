@@ -14,6 +14,8 @@ public class JormungandExecutor implements Runnable {
     private Queue<Long> processQueue = new PriorityQueue<>();
     private Semaphore executorLock = new Semaphore(1);
 
+    private Long runningProcess;
+
     public JormungandExecutor(YggdrasilCore yggdrasilCore, JormungandCore jormungandCore) {
         this.yggdrasilCore = yggdrasilCore;
         this.jormungandCore = jormungandCore;
@@ -26,22 +28,31 @@ public class JormungandExecutor implements Runnable {
             while (yggdrasilCore.isRunningYggdrasil()) {
                 if (!processQueue.isEmpty()) {
                     executorLock.acquire();
-                    Long processID = processQueue.remove();
+                    runningProcess = processQueue.remove();
 
-                    JormungandSubProcess subProcess = jormungandCore.getProcess(processID);
+                    JormungandSubProcess subProcess = jormungandCore.getProcess(runningProcess);
 
                     subProcess.run();
+
+                    runningProcess = null;
                     executorLock.release();
                 }
-                Thread.sleep(1000);
+                Thread.sleep(100);
             }
         } catch(InterruptedException e) {
             yggdrasilCore.logException(e);
+            executorLock.release();
         }
         yggdrasilCore.logInfo("JormungandExecutor stopped");
     }
 
     public void schedule(Long subProcessID) {
         processQueue.add(subProcessID);
+    }
+
+    public void shutdownJormungand() {
+        if (runningProcess != null) {
+            jormungandCore.getProcess(runningProcess).kill();
+        }
     }
 }

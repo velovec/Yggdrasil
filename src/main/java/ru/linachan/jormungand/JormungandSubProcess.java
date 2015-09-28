@@ -15,6 +15,7 @@ public class JormungandSubProcess {
     private ProcessBuilder processBuilder;
     private YggdrasilCore yggdrasilCore;
     private Map<String, String> processEnvironment;
+    private Process process;
     private InputStream processOutput;
     private Integer returnCode;
 
@@ -58,20 +59,24 @@ public class JormungandSubProcess {
         try {
             processState = JormungandSubProcessState.WAITING;
 
-            Process proc = processBuilder.start();
+            process = processBuilder.start();
             processState = JormungandSubProcessState.RUNNING;
 
-            processOutput = proc.getInputStream();
+            processOutput = process.getInputStream();
 
-            proc.waitFor();
+            process.waitFor();
 
-            returnCode = proc.exitValue();
+            returnCode = process.exitValue();
             processState = JormungandSubProcessState.FINISHED;
         } catch(InterruptedException | IOException e) {
             processState = JormungandSubProcessState.ERROR;
             returnCode = 1;
             this.yggdrasilCore.logException(e);
         }
+    }
+
+    public void kill() {
+        process.destroy();
     }
 
     public List<String> getProcessOutput() {

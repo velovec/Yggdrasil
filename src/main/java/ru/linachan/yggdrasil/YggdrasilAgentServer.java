@@ -1,5 +1,10 @@
 package ru.linachan.yggdrasil;
 
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
+import ru.linachan.asgard.orm.Tables;
+
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -21,6 +26,7 @@ public class YggdrasilAgentServer implements Runnable {
         this.core = core;
 
         this.core.logInfo("YggdrasilAgentServer: Initializing YggdrasilAgentServer...");
+        this.core.logInfo("YggdrasilAgentServer: " + String.valueOf(countAgents()) + " agent(s) registered");
 
         try {
             this.serverHost = InetAddress.getByName(this.core.getConfig("YggdrasilAgentHost", "0.0.0.0"));
@@ -59,17 +65,64 @@ public class YggdrasilAgentServer implements Runnable {
         this.core.logInfo("YggdrasilAgentServer: finished");
     }
 
+    private byte[] stringToByteArray(String string) {
+        int len = string.length();
+        byte[] resultArray = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            resultArray[i / 2] = (byte) ((Character.digit(string.charAt(i), 16) << 4)
+                    + Character.digit(string.charAt(i+1), 16));
+        }
+        return resultArray;
+    }
+
+    private String byteArrayToString(byte[] byteArray) {
+        String HEXES = "0123456789ABCDEF";
+        String resultString = "";
+        for (byte singleByte: byteArray) {
+            resultString += HEXES.charAt((singleByte & 0xF0) >> 4);
+            resultString += HEXES.charAt((singleByte & 0x0F));
+        }
+        return resultString;
+    }
+
+    private Integer countAgents() {
+        DSLContext context = this.core.getDBManager().getContext();
+        return context.select().from(Tables.AGENT_DATA).fetchCount();
+    }
+
+    private byte[] registerAgent(String osName, String osVer, Long totalMem, String cpuName, Integer cpuCores) {
+        byte[] accessToken = new byte[8];
+        new Random().nextBytes(accessToken);
+
+        DSLContext context = this.core.getDBManager().getContext();
+        context.insertInto(
+            Tables.AGENT_DATA,
+            Tables.AGENT_DATA.OS_NAME,
+            Tables.AGENT_DATA.OS_VERSION,
+            Tables.AGENT_DATA.TOTAL_RAM,
+            Tables.AGENT_DATA.CPU_NAME,
+            Tables.AGENT_DATA.CPU_CORES,
+            Tables.AGENT_DATA.ACCESS_TOKEN
+        ).values(
+                osName, osVer, totalMem, cpuName, cpuCores, byteArrayToString(accessToken)
+        ).execute();
+
+        return accessToken;
+    }
+
     private YggdrasilPacket process(YggdrasilPacket request) {
         YggdrasilPacket response = new YggdrasilPacket(request.opCode, request.subOpCode, request.token, null);
         if (request.opCode == (byte)0x00) {
             if (Arrays.equals(request.token, new byte[8])) {
                 this.core.logInfo("YggdrasilAgentServer: New agent found:");
                 this.core.logInfo("\tIP: " + request.address.getHostAddress());
-                for (String key: request.parameters.keySet()) {
-                    this.core.logInfo("\t" + key + ": " + request.parameters.get(key));
-                }
-                response.token = new byte[8];
-                new Random().nextBytes(response.token);
+                response.token = registerAgent(
+                    request.parameters.get("OS_NAME"),
+                    request.parameters.get("OS_VERSION"),
+                    Long.parseLong(request.parameters.get("TOTAL_MEM")),
+                    request.parameters.get("CPU_NAME"),
+                    Integer.parseInt(request.parameters.get("CPU_CORES"))
+                );
             }
         }
         return response;

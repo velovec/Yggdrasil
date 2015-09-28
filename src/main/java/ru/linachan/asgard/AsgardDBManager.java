@@ -2,6 +2,10 @@ package ru.linachan.asgard;
 
 import ru.linachan.yggdrasil.YggdrasilCore;
 
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -27,11 +31,7 @@ public class AsgardDBManager {
         return c != null;
     }
 
-    public Connection getConn() {
-        return c;
-    }
-
-    public <T extends AsgardSelectable> AsgardSQLQuery<T> query(T model) {
-        return new AsgardSQLQuery<T>(this, model);
+    public DSLContext getContext() {
+        return DSL.using(c, SQLDialect.MYSQL);
     }
 }

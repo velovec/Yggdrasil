@@ -1,5 +1,6 @@
 package ru.linachan.asgard;
 
+import org.jooq.DSLContext;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
 import java.sql.SQLException;
@@ -29,11 +30,11 @@ public class AsgardCore {
         }
     }
 
-    public <T extends AsgardSelectable> AsgardSQLQuery<T> query(T model) {
-        return this.db.query(model);
+    public DSLContext getContext() {
+        return db.getContext();
     }
 
     public boolean executeTests() {
-        return true;
+        return db.checkConnection();
     }
 }

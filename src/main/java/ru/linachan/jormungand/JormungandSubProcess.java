@@ -13,18 +13,21 @@ import java.util.Map;
 public class JormungandSubProcess {
 
     private ProcessBuilder processBuilder;
-    private JormungandCore jormungandCore;
     private YggdrasilCore yggdrasilCore;
     private Map<String, String> processEnvironment;
     private InputStream processOutput;
+    private Integer returnCode;
 
-    public JormungandSubProcess(YggdrasilCore yggdrasilCore, JormungandCore jormungandCore, String... cmd) {
-        this.jormungandCore = jormungandCore;
+    private JormungandSubProcessState processState;
+
+    public JormungandSubProcess(YggdrasilCore yggdrasilCore, String... cmd) {
         this.yggdrasilCore = yggdrasilCore;
         this.processBuilder = new ProcessBuilder(cmd);
         this.processEnvironment = processBuilder.environment();
 
         this.processBuilder.redirectErrorStream(true);
+
+        this.processState = JormungandSubProcessState.READY;
     }
 
     public void clearEnvironment() {
@@ -51,24 +54,24 @@ public class JormungandSubProcess {
         this.processBuilder.directory(new File(workingDirectory));
     }
 
-    public Integer run() {
-        Integer returnCode = 1;
-
+    public void run() {
         try {
-            jormungandCore.acquire_lock();
+            processState = JormungandSubProcessState.WAITING;
+
             Process proc = processBuilder.start();
+            processState = JormungandSubProcessState.RUNNING;
 
             processOutput = proc.getInputStream();
+
             proc.waitFor();
 
             returnCode = proc.exitValue();
+            processState = JormungandSubProcessState.FINISHED;
         } catch(InterruptedException | IOException e) {
+            processState = JormungandSubProcessState.ERROR;
+            returnCode = 1;
             this.yggdrasilCore.logException(e);
-        } finally {
-            jormungandCore.release_lock();
         }
-
-        return returnCode;
     }
 
     public List<String> getProcessOutput() {
@@ -87,5 +90,17 @@ public class JormungandSubProcess {
         }
 
         return outputLog;
+    }
+
+    public JormungandSubProcessState getState() {
+        return processState;
+    }
+
+    public Integer getReturnCode() {
+        return returnCode;
+    }
+
+    public boolean isFinished() {
+        return (processState == JormungandSubProcessState.FINISHED)||(processState == JormungandSubProcessState.ERROR);
     }
 }

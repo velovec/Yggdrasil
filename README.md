@@ -1,15 +1,13 @@
-![logo](http://git.linachan.ru/yggdrasil-project/yggdrasil/raw/master/src/main/resources/logo_small.jpg) # Yggdrasil Project
-
-[![build status](http://ci.linachan.ru/projects/2/status.png?ref=master)](http://ci.linachan.ru/projects/2?ref=master)
+![logo](http://github.com/velovec/yggdrasil/raw/master/src/main/resources/logo_small.jpg) # Yggdrasil Project
 
 Open-Source Scalable Network Management System
 
 It includes:
-* Core Controller                     - **Yggdrasil**
-* MongoDB Data Storage Service        - **Asgard**
-* User Session Manasger               - **Fenrir**
-* Python plugin layer                 - **Jormungand**
-* Security System                     - **Niflheim**
-* Docker/RabbitMQ Communication Layer - **Valkyrie**
-
-Latest build: [download](http://artifacts.linachan.ru/yggdrasil/)
+* Core Controller              - **Yggdrasil**
+* MySQL Data Storage Service   - **Asgard**
+* User Session Manager         - **Fenrir**
+* Shell Executor               - **Jormungand**
+* Security System              - **Niflheim**
+* RabbitMQ Communication Layer - **Valkyrie**
+* API Service                  - **Midgard**
+* Static Storage               - **Urd**

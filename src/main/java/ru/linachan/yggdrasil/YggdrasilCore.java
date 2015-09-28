@@ -21,7 +21,7 @@ public class YggdrasilCore {
     private NiflheimCore security;
     private ValkyrieCore broker;
     private FenrirCore auth;
-    private JormungandCore storage;
+    private JormungandCore executor;
     private UrdCore cache;
 
     private Properties cfg;
@@ -45,7 +45,7 @@ public class YggdrasilCore {
         this.security   = new NiflheimCore(this);   // Instantiate main security system
         this.broker     = new ValkyrieCore(this);   // Instantiate main message transport system
         this.auth       = new FenrirCore(this);     // Instantiate main authorization system
-        this.storage    = new JormungandCore(this); // Instantiate cloud storage system
+        this.executor   = new JormungandCore(this); // Instantiate executor system
         this.cache      = new UrdCore(this);        // Instantiate cache system
     }
 
@@ -122,13 +122,13 @@ public class YggdrasilCore {
         boolean authOk = this.auth.executeTests();
         logInfo("FenrirCore: " + ((authOk) ? "PASS" : "FAIL"));
 
-        boolean storageOk = this.storage.execute_tests();
-        logInfo("JormungandCore: " + ((storageOk) ? "PASS" : "FAIL"));
+        boolean executorOk = this.executor.execute_tests();
+        logInfo("JormungandCore: " + ((executorOk) ? "PASS" : "FAIL"));
 
         boolean cacheOk = this.cache.execute_tests();
         logInfo("UrdCore: " + ((cacheOk) ? "PASS" : "FAIL"));
 
-        if (dbOk && securityOk && brokerOk && authOk && storageOk && cacheOk) {
+        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk) {
             logInfo("YggdrasilCore: Self-diagnostic successfully completed");
             return true;
         } else {
@@ -162,8 +162,8 @@ public class YggdrasilCore {
         return broker;
     }
 
-    public JormungandCore getStorageManager() {
-        return storage;
+    public JormungandCore getExecutiorManager() {
+        return executor;
     }
 
     public UrdCore getCacheManager() {

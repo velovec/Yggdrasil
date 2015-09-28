@@ -47,6 +47,10 @@
             <artifactId>jooq-codegen</artifactId>
             <version>3.6.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.jyaml</groupId>
+            <artifactId>jyaml</artifactId>
+        </dependency>
     </dependencies>
 
 

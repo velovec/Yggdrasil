@@ -1,5 +1,8 @@
 package ru.linachan.alfheim;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import java.util.*;
 
 public class AlfheimImage {
@@ -19,6 +22,27 @@ public class AlfheimImage {
 
         this.elements.add("vm");
         this.elements.add(operationSystem.getOperationSystem());
+    }
+
+    public AlfheimImage(JSONObject imageData) {
+        this.imageName = (String) imageData.get("name");
+
+        for (Object element : (JSONArray) imageData.get("elements")) {
+            this.elements.add((String) element);
+        }
+
+        String imageArch = (String) imageData.get("arch");
+        String imageType = (String) imageData.get("type");
+        String osFamily = (String) ((JSONObject)imageData.get("os")).get("family");
+        String osVersion = (String) ((JSONObject)imageData.get("os")).get("release");
+
+        this.imageArch = AlfheimArchitecture.valueOf(imageArch.toUpperCase());
+        this.imageType = AlfheimImageType.valueOf(imageType.toUpperCase());
+        this.operationSystem = AlfheimOS.valueOf((osFamily + "_" + osVersion).toUpperCase());
+        for (Object key : ((JSONObject) imageData.get("env")).keySet()) {
+            Object value = ((JSONObject) imageData.get("env")).get(key);
+            parameters.put((String) key, (String) value);
+        }
     }
 
     public void addElement(String... elements) {

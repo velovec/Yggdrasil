@@ -22,7 +22,7 @@ public class AlfheimCore {
         this.useSudo = Boolean.parseBoolean(yggdrasilCore.getConfig("AlfheimUseSudo", "true"));
     }
 
-    public JormungandSubProcess buildImage(AlfheimImage image) {
+    public Long buildImage(AlfheimImage image) {
         List<String> commandLine = image.buildCommandLine(useSudo);
 
         Long processID = jormungandCore.prepareExecution(commandLine);
@@ -35,7 +35,7 @@ public class AlfheimCore {
 
         jormungandCore.scheduleExecution(processID);
 
-        return jormungandCore.waitFor(processID);
+        return processID;
     }
 
     public boolean execute_tests() {
@@ -43,8 +43,12 @@ public class AlfheimCore {
         jormungandCore.scheduleExecution(processID);
         JormungandSubProcess process = jormungandCore.waitFor(processID);
 
-        if (process.getReturnCode() != 0) {
+        if (process.getReturnCode() > 0) {
             yggdrasilCore.logWarning("diskimage-builder not installed!");
+            yggdrasilCore.logWarning("EXIT_CODE: " + process.getReturnCode());
+            for (String line : process.getProcessOutput()) {
+                yggdrasilCore.logWarning("OUT: " + line);
+            }
             return false;
         }
 

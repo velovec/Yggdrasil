@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import org.json.simple.JSONObject;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
-// import ru.linachan.midgard.handler.api.*;
+import ru.linachan.midgard.handler.api.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -75,7 +75,7 @@ public class MidgardClientHandler implements Runnable {
     }
 
     private void setUpHandlers() {
-        // handlers.put("^/api/storage/(.*?)$", new StorageAPI());
+        handlers.put("^/api/image/(.*?)$", new ImageBuilderAPI());
     }
 
     private MidgardHTTPResponse handleRequest(MidgardHTTPRequest request) {

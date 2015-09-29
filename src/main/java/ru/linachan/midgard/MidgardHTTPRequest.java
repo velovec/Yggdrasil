@@ -117,6 +117,14 @@ public class MidgardHTTPRequest {
         }
     }
 
+    public String getCookie(String cookie) {
+        if (this.cookies.containsKey(cookie)) {
+            return this.cookies.get(cookie);
+        } else {
+            return null;
+        }
+    }
+
     public int getContentLength() {
         if (this.headers.containsKey("Content-Length")) {
             return Integer.parseInt(this.headers.get("Content-Length"));

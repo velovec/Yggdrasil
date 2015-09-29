@@ -34,6 +34,7 @@ public class JormungandExecutor implements Runnable {
 
                     subProcess.run();
 
+                    yggdrasilCore.logInfo("Process ID" + runningProcess + " finished with EXIT_CODE: " + subProcess.getReturnCode());
                     runningProcess = null;
                     executorLock.release();
                 }

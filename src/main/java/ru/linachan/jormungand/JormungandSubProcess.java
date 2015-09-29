@@ -84,6 +84,9 @@ public class JormungandSubProcess {
             process.waitFor();
 
             returnCode = process.exitValue();
+
+            process.destroy();
+
             processState = JormungandSubProcessState.FINISHED;
         } catch(InterruptedException | IOException e) {
             processState = JormungandSubProcessState.ERROR;

@@ -31,14 +31,14 @@ public class JormungandSubProcessIO implements Runnable {
 
                 String line;
 
-                while ((reader.ready())&&((line = reader.readLine()) != null)) {
+                while ((line = reader.readLine()) != null) {
                     outputLog.add(line);
-                    // core.logInfo(line);
                 }
 
                 reader.close();
             } catch (final Exception e) {
-                core.logException(e);
+                // core.logException(e);
+                // Ignore exception
             }
         }
     }

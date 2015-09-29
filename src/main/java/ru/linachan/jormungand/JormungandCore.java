@@ -19,7 +19,7 @@ public class JormungandCore {
     private Long generateProcessID() {
         Random randomGenerator = new Random();
         while (true) {
-            Long pid = randomGenerator.nextLong();
+            Long pid = Math.abs(randomGenerator.nextLong());
             if (!processList.containsKey(pid))
                 return pid;
         }
@@ -75,6 +75,13 @@ public class JormungandCore {
         JormungandSubProcess process = waitFor(pid);
 
         Integer retVal = process.getReturnCode();
+
+        if (retVal > 0) {
+            core.logWarning("EXIT_CODE: " + retVal);
+            for (String line : process.getProcessOutput()) {
+                core.logWarning("OUT: " + line);
+            }
+        }
 
         return retVal == 0;
     }

@@ -27,10 +27,6 @@ public class AlfheimImage {
     public AlfheimImage(JSONObject imageData) {
         this.imageName = (String) imageData.get("name");
 
-        for (Object element : (JSONArray) imageData.get("elements")) {
-            this.elements.add((String) element);
-        }
-
         String imageArch = (String) imageData.get("arch");
         String imageType = (String) imageData.get("type");
         String osFamily = (String) ((JSONObject)imageData.get("os")).get("family");
@@ -42,6 +38,13 @@ public class AlfheimImage {
         for (Object key : ((JSONObject) imageData.get("env")).keySet()) {
             Object value = ((JSONObject) imageData.get("env")).get(key);
             parameters.put((String) key, (String) value);
+        }
+
+        this.elements.add("vm");
+        this.elements.add(operationSystem.getOperationSystem());
+
+        for (Object element : (JSONArray) imageData.get("elements")) {
+            this.elements.add((String) element);
         }
     }
 

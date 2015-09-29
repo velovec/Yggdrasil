@@ -13,6 +13,7 @@ public class AlfheimCore {
     private JormungandCore jormungandCore;
     private String elementsPath;
     private Boolean useSudo;
+    private String workingDirectory;
 
     public AlfheimCore(YggdrasilCore yggdrasilCore) {
         this.yggdrasilCore = yggdrasilCore;
@@ -20,6 +21,7 @@ public class AlfheimCore {
 
         this.elementsPath = yggdrasilCore.getConfig("AlfheimElementsPath", "elements");
         this.useSudo = Boolean.parseBoolean(yggdrasilCore.getConfig("AlfheimUseSudo", "true"));
+        this.workingDirectory = yggdrasilCore.getConfig("AlfheimImagePath", ".");
     }
 
     public Long buildImage(AlfheimImage image) {
@@ -32,6 +34,7 @@ public class AlfheimCore {
             jormungandCore.getProcess(processID).setEnvironment("DIB_RELEASE", image.getOperationSystem().getRelease());
         jormungandCore.getProcess(processID).setEnvironment("ELEMENTS_PATH", elementsPath);
         jormungandCore.getProcess(processID).setEnvironment(image.getParameters());
+        jormungandCore.getProcess(processID).setWorkingDirectory(workingDirectory);
 
         jormungandCore.scheduleExecution(processID);
 
@@ -54,6 +57,11 @@ public class AlfheimCore {
 
         if (!new File(elementsPath).isDirectory()) {
             yggdrasilCore.logWarning("elementsPath doesn't exist!");
+            return false;
+        }
+
+        if (!new File(workingDirectory).isDirectory()) {
+            yggdrasilCore.logWarning("imagePath doesn't exist!");
             return false;
         }
 

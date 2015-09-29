@@ -11,3 +11,4 @@ It includes:
 * RabbitMQ Communication Layer - **Valkyrie**
 * API Service                  - **Midgard**
 * Static Storage               - **Urd**
+* Image Builder                - **Alfheim**

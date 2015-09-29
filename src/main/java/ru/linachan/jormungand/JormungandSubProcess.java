@@ -16,12 +16,24 @@ public class JormungandSubProcess {
     private YggdrasilCore yggdrasilCore;
     private Map<String, String> processEnvironment;
     private Process process;
+    private JormungandSubProcessIO subProcessIO;
     private InputStream processOutput;
     private Integer returnCode;
+    private Boolean isRunning = false;
 
     private JormungandSubProcessState processState;
 
     public JormungandSubProcess(YggdrasilCore yggdrasilCore, String... cmd) {
+        this.yggdrasilCore = yggdrasilCore;
+        this.processBuilder = new ProcessBuilder(cmd);
+        this.processEnvironment = processBuilder.environment();
+
+        this.processBuilder.redirectErrorStream(true);
+
+        this.processState = JormungandSubProcessState.READY;
+    }
+
+    public JormungandSubProcess(YggdrasilCore yggdrasilCore, List<String> cmd) {
         this.yggdrasilCore = yggdrasilCore;
         this.processBuilder = new ProcessBuilder(cmd);
         this.processEnvironment = processBuilder.environment();
@@ -60,9 +72,14 @@ public class JormungandSubProcess {
             processState = JormungandSubProcessState.WAITING;
 
             process = processBuilder.start();
+            isRunning = true;
+
             processState = JormungandSubProcessState.RUNNING;
 
             processOutput = process.getInputStream();
+
+            subProcessIO = new JormungandSubProcessIO(yggdrasilCore, this, processOutput);
+            new Thread(subProcessIO).start();
 
             process.waitFor();
 
@@ -72,6 +89,8 @@ public class JormungandSubProcess {
             processState = JormungandSubProcessState.ERROR;
             returnCode = 1;
             this.yggdrasilCore.logException(e);
+        } finally {
+            isRunning = false;
         }
     }
 
@@ -80,21 +99,7 @@ public class JormungandSubProcess {
     }
 
     public List<String> getProcessOutput() {
-        List<String> outputLog = new ArrayList<String>();
-
-        try {
-            Integer bytesAvailable = processOutput.available();
-
-            byte[] rawOutput = new byte[bytesAvailable];
-
-            processOutput.read(rawOutput);
-
-            Collections.addAll(outputLog, new String(rawOutput).split("\\n"));
-        } catch (IOException e) {
-            this.yggdrasilCore.logException(e);
-        }
-
-        return outputLog;
+        return subProcessIO.getOutput();
     }
 
     public JormungandSubProcessState getState() {
@@ -107,5 +112,9 @@ public class JormungandSubProcess {
 
     public boolean isFinished() {
         return (processState == JormungandSubProcessState.FINISHED)||(processState == JormungandSubProcessState.ERROR);
+    }
+
+    public Boolean isRunning() {
+        return isRunning;
     }
 }

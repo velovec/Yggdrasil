@@ -43,14 +43,24 @@ public class JormungandCore {
         return process;
     }
 
-    public Long scheduleExecution(String... cmd) {
+    public Long prepareExecution(String... cmd) {
         JormungandSubProcess subProcess = new JormungandSubProcess(this.core, cmd);
         Long subProcessID = generateProcessID();
 
         processList.put(subProcessID, subProcess);
-        processExecutor.schedule(subProcessID);
-
         return subProcessID;
+    }
+
+    public Long prepareExecution(List<String> cmd) {
+        JormungandSubProcess subProcess = new JormungandSubProcess(this.core, cmd);
+        Long subProcessID = generateProcessID();
+
+        processList.put(subProcessID, subProcess);
+        return subProcessID;
+    }
+
+    public void scheduleExecution(Long subProcessID) {
+        processExecutor.schedule(subProcessID);
     }
 
     public void shutdownJormungand() {
@@ -58,7 +68,9 @@ public class JormungandCore {
     }
 
     public boolean execute_tests() {
-        Long pid = scheduleExecution("ls", "-l");
+        Long pid = prepareExecution("ls", "-l");
+
+        scheduleExecution(pid);
 
         JormungandSubProcess process = waitFor(pid);
 

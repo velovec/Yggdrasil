@@ -16,11 +16,15 @@ public class AsgardDBManager {
 
     private Connection c = null;
 
-    public AsgardDBManager(YggdrasilCore core, String db_driver, String db_url, String db_user, String db_password) throws ClassNotFoundException, SQLException {
+    public AsgardDBManager(YggdrasilCore core, String db_driver, String db_url, String db_user, String db_password) {
         this.core = core;
 
-        Class.forName(db_driver);
-        c = DriverManager.getConnection(db_url, db_user, db_password);
+        try {
+            Class.forName(db_driver);
+            c = DriverManager.getConnection(db_url, db_user, db_password);
+        } catch (ClassNotFoundException | SQLException e) {
+            core.logException(e);
+        }
 
         if (this.checkConnection()) {
             this.core.logInfo("Asgard Data Storage on-line...");

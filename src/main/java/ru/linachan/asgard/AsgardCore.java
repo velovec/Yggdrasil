@@ -19,15 +19,7 @@ public class AsgardCore {
         String db_password = this.core.getConfig("AsgardDBPassword", "");
 
         this.core.logInfo("Initializing Asgard Data Storage...");
-        try {
-            this.db = new AsgardDBManager(this.core, db_driver, db_url, db_user, db_password);
-        } catch (SQLException e) {
-            this.core.logWarning("SQL Error: " + e.getSQLState() + " : " + e.getMessage());
-            this.core.shutdownYggdrasil();
-        } catch (ClassNotFoundException e) {
-            this.core.logWarning("SQL Error: " + e.getMessage());
-            this.core.shutdownYggdrasil();
-        }
+        this.db = new AsgardDBManager(this.core, db_driver, db_url, db_user, db_password);
     }
 
     public DSLContext getContext() {

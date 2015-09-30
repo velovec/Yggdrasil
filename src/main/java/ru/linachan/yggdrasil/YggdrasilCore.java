@@ -28,6 +28,8 @@ public class YggdrasilCore {
     private UrdCore cache;
     private AlfheimCore builder;
 
+    private YggdrasilShutdownHook shutdownHook;
+
     private Properties cfg;
 
     private Logger logger = Logger.getLogger("Yggdrasil");
@@ -45,6 +47,9 @@ public class YggdrasilCore {
             this.logWarning("Config Error: " + e.getMessage());
         }
 
+        this.shutdownHook = new YggdrasilShutdownHook(this);
+        this.registerShutdownHook();
+
         this.db         = new AsgardCore(this);     // Instantiate main data storage system
         this.security   = new NiflheimCore(this);   // Instantiate main security system
         this.broker     = new ValkyrieCore(this);   // Instantiate main message transport system
@@ -52,6 +57,10 @@ public class YggdrasilCore {
         this.executor   = new JormungandCore(this); // Instantiate executor system
         this.cache      = new UrdCore(this);        // Instantiate cache system
         this.builder    = new AlfheimCore(this);    // Instantiate image builder
+    }
+
+    private void registerShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(this.shutdownHook));
     }
 
     private void configLogger() {

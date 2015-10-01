@@ -21,6 +21,8 @@ public class JormungandSubProcess {
     private Integer returnCode;
     private Boolean isRunning = false;
 
+    private List<String> processTags = new ArrayList<>();
+
     private JormungandSubProcessState processState;
 
     public JormungandSubProcess(YggdrasilCore yggdrasilCore, String... cmd) {
@@ -41,6 +43,14 @@ public class JormungandSubProcess {
         this.processBuilder.redirectErrorStream(true);
 
         this.processState = JormungandSubProcessState.READY;
+    }
+
+    public void tagProcess(String tag) {
+        this.processTags.add(tag);
+    }
+
+    public boolean hasTag(String tag) {
+        return this.processTags.contains(tag);
     }
 
     public void clearEnvironment() {

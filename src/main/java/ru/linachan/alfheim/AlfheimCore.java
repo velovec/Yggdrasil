@@ -35,6 +35,7 @@ public class AlfheimCore {
         jormungandCore.getProcess(processID).setEnvironment("ELEMENTS_PATH", elementsPath);
         jormungandCore.getProcess(processID).setEnvironment(image.getParameters());
         jormungandCore.getProcess(processID).setWorkingDirectory(workingDirectory);
+        jormungandCore.getProcess(processID).tagProcess("alfheimBuild");
 
         jormungandCore.scheduleExecution(processID);
 

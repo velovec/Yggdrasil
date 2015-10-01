@@ -1,5 +1,6 @@
 package ru.linachan.midgard.handler.api;
 
+import org.jooq.tools.json.JSONArray;
 import org.json.simple.JSONObject;
 import ru.linachan.alfheim.AlfheimImage;
 import ru.linachan.jormungand.JormungandSubProcess;
@@ -7,7 +8,10 @@ import ru.linachan.jormungand.JormungandSubProcessState;
 import ru.linachan.midgard.MidgardHTTPRequest;
 import ru.linachan.midgard.MidgardHTTPResponse;
 import ru.linachan.midgard.MidgardRequestHandler;
+import ru.linachan.util.Pair;
 import ru.linachan.yggdrasil.YggdrasilCore;
+
+import java.util.List;
 
 @SuppressWarnings({"unchecked"})
 public class ImageBuilderAPI implements MidgardRequestHandler {
@@ -23,6 +27,22 @@ public class ImageBuilderAPI implements MidgardRequestHandler {
                 responseData.put("build_id", core.getImageBuilder().buildImage(image));
                 response.setResponseData(responseData);
             }
+        } else if (request.matchURL("^/api/image/list$")) {
+            List<Pair<Long, JormungandSubProcess>> buildList = core.getExecutionManager().getProcessesByTag("alfheimBuild");
+
+            JSONObject responseData = new JSONObject();
+            JSONArray processesData = new JSONArray();
+
+            for (Pair<Long, JormungandSubProcess> process : buildList) {
+                JSONObject processData = new JSONObject();
+
+                processData.put("buildID", process.key);
+                processData.put("buildStatus", process.value.getState());
+
+                processesData.add(processData);
+            }
+            responseData.put("builds", processesData);
+            response.setResponseData(responseData);
         } else if (request.matchURL("^/api/image/([0-9]+)$")) {
             Long processID = Long.parseLong(request.splitURLRegExp("^/api/image/([0-9]+)$").get(0));
             JormungandSubProcess process = core.getExecutionManager().getProcess(processID);

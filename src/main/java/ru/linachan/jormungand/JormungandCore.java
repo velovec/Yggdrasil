@@ -1,5 +1,6 @@
 package ru.linachan.jormungand;
 
+import ru.linachan.util.Pair;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
 import java.util.*;
@@ -29,6 +30,16 @@ public class JormungandCore {
         if (processList.containsKey(processID))
             return processList.get(processID);
         return null;
+    }
+
+    public List<Pair<Long, JormungandSubProcess>> getProcessesByTag(String tag) {
+        List<Pair<Long, JormungandSubProcess>> processes = new ArrayList<>();
+        for (Long processID : processList.keySet()) {
+            if (processList.get(processID).hasTag(tag)) {
+                processes.add(new Pair<>(processID, processList.get(processID)));
+            }
+        }
+        return processes;
     }
 
     public JormungandSubProcess waitFor(Long processID) {

@@ -4,7 +4,7 @@ import ru.linachan.alfheim.*;
 import ru.linachan.asgard.AsgardCore;
 import ru.linachan.fenrir.FenrirCore;
 import ru.linachan.jormungand.JormungandCore;
-import ru.linachan.jormungand.JormungandSubProcess;
+import ru.linachan.loki.LokiCore;
 import ru.linachan.midgard.MidgardServer;
 import ru.linachan.niflheim.NiflheimCore;
 import ru.linachan.urd.UrdCore;
@@ -12,7 +12,6 @@ import ru.linachan.valkyrie.ValkyrieCore;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -27,6 +26,7 @@ public class YggdrasilCore {
     private JormungandCore executor;
     private UrdCore cache;
     private AlfheimCore builder;
+    private LokiCore browser;
 
     private YggdrasilShutdownHook shutdownHook;
 
@@ -57,6 +57,7 @@ public class YggdrasilCore {
         this.executor   = new JormungandCore(this); // Instantiate executor system
         this.cache      = new UrdCore(this);        // Instantiate cache system
         this.builder    = new AlfheimCore(this);    // Instantiate image builder
+        this.browser    = new LokiCore(this);       // Instantiate web browser driver
     }
 
     private void registerShutdownHook() {
@@ -149,7 +150,10 @@ public class YggdrasilCore {
         boolean builderOk = this.builder.execute_tests();
         logInfo("AlfheimCore: " + ((builderOk) ? "PASS" : "FAIL"));
 
-        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk) {
+        boolean browserOk = this.browser.execute_tests();
+        logInfo("LokiCore: " + ((browserOk) ? "PASS" : "FAIL"));
+
+        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk && browserOk) {
             logInfo("YggdrasilCore: Self-diagnostic successfully completed");
             return true;
         } else {
@@ -192,4 +196,8 @@ public class YggdrasilCore {
     }
 
     public AlfheimCore getImageBuilder() { return builder; }
+
+    public LokiCore getBrowser() {
+        return browser;
+    }
 }

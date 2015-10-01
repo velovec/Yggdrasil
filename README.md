@@ -12,3 +12,4 @@ It includes:
 * API Service                  - **Midgard**
 * Static Storage               - **Urd**
 * Image Builder                - **Alfheim**
+* Selenium Driver Manager      - **Loki**

@@ -13,6 +13,8 @@ public class JormungandCore {
 
     public JormungandCore(YggdrasilCore yggdrasilCore) {
         this.core = yggdrasilCore;
+        this.core.logInfo("Initializing Jormungand Shell Executor...");
+
         this.processExecutor = new JormungandExecutor(core, this);
         new Thread(this.processExecutor).start();
     }

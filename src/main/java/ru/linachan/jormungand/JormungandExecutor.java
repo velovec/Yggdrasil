@@ -23,7 +23,7 @@ public class JormungandExecutor implements Runnable {
 
     @Override
     public void run() {
-        yggdrasilCore.logInfo("Starting JormungandExecutor");
+        yggdrasilCore.logInfo("JormungandExecutor: Starting...");
         try {
             while (yggdrasilCore.isRunningYggdrasil()) {
                 if (!processQueue.isEmpty()) {
@@ -34,7 +34,7 @@ public class JormungandExecutor implements Runnable {
 
                     subProcess.run();
 
-                    yggdrasilCore.logInfo("Process ID" + runningProcess + " finished with EXIT_CODE: " + subProcess.getReturnCode());
+                    yggdrasilCore.logInfo("JormungandExecutor: Process ID" + runningProcess + " finished with EXIT_CODE: " + subProcess.getReturnCode());
                     runningProcess = null;
                     executorLock.release();
                 }
@@ -44,7 +44,7 @@ public class JormungandExecutor implements Runnable {
             yggdrasilCore.logException(e);
             executorLock.release();
         }
-        yggdrasilCore.logInfo("JormungandExecutor stopped");
+        yggdrasilCore.logInfo("JormungandExecutor: Stopped");
     }
 
     public void schedule(Long subProcessID) {

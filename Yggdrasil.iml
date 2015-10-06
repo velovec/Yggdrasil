@@ -69,5 +69,6 @@
     <orderEntry type="library" name="Maven: org.webbitserver:webbit:0.4.14" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty:3.5.2.Final" level="project" />
     <orderEntry type="library" name="Maven: org.seleniumhq.selenium:selenium-leg-rc:2.47.1" level="project" />
+    <orderEntry type="library" name="Maven: org.rxtx:rxtx:2.1.7" level="project" />
   </component>
 </module>

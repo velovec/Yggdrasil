@@ -57,6 +57,11 @@
             <artifactId>selenium-java</artifactId>
             <version>2.47.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.rxtx</groupId>
+            <artifactId>rxtx</artifactId>
+            <version>2.1.7</version>
+        </dependency>
     </dependencies>
 
 
@@ -121,7 +126,6 @@
                         <database>
                             <name>org.jooq.util.mysql.MySQLDatabase</name>
                             <includes>.*</includes>
-                            <excludes></excludes>
                             <inputSchema>asgard</inputSchema>
                         </database>
                         <target>

@@ -58,6 +58,12 @@ public class ValhallaCore {
         return null;
     }
 
+    public void shutdownValhalla() {
+        for (String taskName: taskMap.keySet()) {
+            taskMap.get(taskName).cancelTask();
+        }
+    }
+
     public boolean execute_tests() {
         ValhallaTask simpleTask = new ValhallaTask("simpleTask", new ValhallaRunnable(yggdrasilCore) {
             @Override

@@ -17,4 +17,14 @@ public class Tables {
 	 * The table asgard.agent_data
 	 */
 	public static final ru.linachan.asgard.orm.tables.AgentData AGENT_DATA = ru.linachan.asgard.orm.tables.AgentData.AGENT_DATA;
+
+	/**
+	 * The table asgard.element_data
+	 */
+	public static final ru.linachan.asgard.orm.tables.ElementData ELEMENT_DATA = ru.linachan.asgard.orm.tables.ElementData.ELEMENT_DATA;
+
+	/**
+	 * The table asgard.task_data
+	 */
+	public static final ru.linachan.asgard.orm.tables.TaskData TASK_DATA = ru.linachan.asgard.orm.tables.TaskData.TASK_DATA;
 }

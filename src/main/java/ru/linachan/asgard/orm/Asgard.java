@@ -11,7 +11,7 @@ package ru.linachan.asgard.orm;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Asgard extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = -997128587;
+	private static final long serialVersionUID = -535236763;
 
 	/**
 	 * The singleton instance of <code>asgard</code>
@@ -34,6 +34,8 @@ public class Asgard extends org.jooq.impl.SchemaImpl {
 
 	private final java.util.List<org.jooq.Table<?>> getTables0() {
 		return java.util.Arrays.<org.jooq.Table<?>>asList(
-			ru.linachan.asgard.orm.tables.AgentData.AGENT_DATA);
+			ru.linachan.asgard.orm.tables.AgentData.AGENT_DATA,
+			ru.linachan.asgard.orm.tables.ElementData.ELEMENT_DATA,
+			ru.linachan.asgard.orm.tables.TaskData.TASK_DATA);
 	}
 }

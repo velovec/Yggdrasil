@@ -19,6 +19,8 @@ public class Keys {
 	// -------------------------------------------------------------------------
 
 	public static final org.jooq.Identity<ru.linachan.asgard.orm.tables.records.AgentDataRecord, java.lang.Integer> IDENTITY_AGENT_DATA = Identities0.IDENTITY_AGENT_DATA;
+	public static final org.jooq.Identity<ru.linachan.asgard.orm.tables.records.ElementDataRecord, java.lang.Integer> IDENTITY_ELEMENT_DATA = Identities0.IDENTITY_ELEMENT_DATA;
+	public static final org.jooq.Identity<ru.linachan.asgard.orm.tables.records.TaskDataRecord, java.lang.Integer> IDENTITY_TASK_DATA = Identities0.IDENTITY_TASK_DATA;
 
 	// -------------------------------------------------------------------------
 	// UNIQUE and PRIMARY KEY definitions
@@ -26,6 +28,9 @@ public class Keys {
 
 	public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.AgentDataRecord> KEY_AGENT_DATA_PRIMARY = UniqueKeys0.KEY_AGENT_DATA_PRIMARY;
 	public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.AgentDataRecord> KEY_AGENT_DATA_UNIQUE_ACCESS_TOKEN = UniqueKeys0.KEY_AGENT_DATA_UNIQUE_ACCESS_TOKEN;
+	public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.ElementDataRecord> KEY_ELEMENT_DATA_PRIMARY = UniqueKeys0.KEY_ELEMENT_DATA_PRIMARY;
+	public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.ElementDataRecord> KEY_ELEMENT_DATA_UNIQUE_NAME = UniqueKeys0.KEY_ELEMENT_DATA_UNIQUE_NAME;
+	public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.TaskDataRecord> KEY_TASK_DATA_PRIMARY = UniqueKeys0.KEY_TASK_DATA_PRIMARY;
 
 	// -------------------------------------------------------------------------
 	// FOREIGN KEY definitions
@@ -38,10 +43,15 @@ public class Keys {
 
 	private static class Identities0 extends org.jooq.impl.AbstractKeys {
 		public static org.jooq.Identity<ru.linachan.asgard.orm.tables.records.AgentDataRecord, java.lang.Integer> IDENTITY_AGENT_DATA = createIdentity(ru.linachan.asgard.orm.tables.AgentData.AGENT_DATA, ru.linachan.asgard.orm.tables.AgentData.AGENT_DATA.ID);
+		public static org.jooq.Identity<ru.linachan.asgard.orm.tables.records.ElementDataRecord, java.lang.Integer> IDENTITY_ELEMENT_DATA = createIdentity(ru.linachan.asgard.orm.tables.ElementData.ELEMENT_DATA, ru.linachan.asgard.orm.tables.ElementData.ELEMENT_DATA.ID);
+		public static org.jooq.Identity<ru.linachan.asgard.orm.tables.records.TaskDataRecord, java.lang.Integer> IDENTITY_TASK_DATA = createIdentity(ru.linachan.asgard.orm.tables.TaskData.TASK_DATA, ru.linachan.asgard.orm.tables.TaskData.TASK_DATA.ID);
 	}
 
 	private static class UniqueKeys0 extends org.jooq.impl.AbstractKeys {
 		public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.AgentDataRecord> KEY_AGENT_DATA_PRIMARY = createUniqueKey(ru.linachan.asgard.orm.tables.AgentData.AGENT_DATA, ru.linachan.asgard.orm.tables.AgentData.AGENT_DATA.ID);
 		public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.AgentDataRecord> KEY_AGENT_DATA_UNIQUE_ACCESS_TOKEN = createUniqueKey(ru.linachan.asgard.orm.tables.AgentData.AGENT_DATA, ru.linachan.asgard.orm.tables.AgentData.AGENT_DATA.ACCESS_TOKEN);
+		public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.ElementDataRecord> KEY_ELEMENT_DATA_PRIMARY = createUniqueKey(ru.linachan.asgard.orm.tables.ElementData.ELEMENT_DATA, ru.linachan.asgard.orm.tables.ElementData.ELEMENT_DATA.ID);
+		public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.ElementDataRecord> KEY_ELEMENT_DATA_UNIQUE_NAME = createUniqueKey(ru.linachan.asgard.orm.tables.ElementData.ELEMENT_DATA, ru.linachan.asgard.orm.tables.ElementData.ELEMENT_DATA.NAME);
+		public static final org.jooq.UniqueKey<ru.linachan.asgard.orm.tables.records.TaskDataRecord> KEY_TASK_DATA_PRIMARY = createUniqueKey(ru.linachan.asgard.orm.tables.TaskData.TASK_DATA, ru.linachan.asgard.orm.tables.TaskData.TASK_DATA.ID);
 	}
 }

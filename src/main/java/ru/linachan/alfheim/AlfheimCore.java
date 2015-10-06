@@ -1,11 +1,16 @@
 package ru.linachan.alfheim;
 
+import org.jooq.DSLContext;
+import ru.linachan.asgard.orm.tables.ElementData;
+import ru.linachan.asgard.orm.tables.records.ElementDataRecord;
 import ru.linachan.jormungand.JormungandCore;
 import ru.linachan.jormungand.JormungandSubProcess;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AlfheimCore {
 
@@ -67,5 +72,21 @@ public class AlfheimCore {
         }
 
         return true;
+    }
+
+    public Map<String, AlfheimElement> getElements() {
+        Map<String, AlfheimElement> elements = new HashMap<>();
+
+        DSLContext ctx = yggdrasilCore.getDBManager().getContext();
+
+        for (ElementDataRecord result : ctx.selectFrom(ElementData.ELEMENT_DATA).fetch()) {
+            AlfheimElement element = new AlfheimElement(yggdrasilCore, this, result);
+        }
+
+        return elements;
+    }
+
+    public String getElementsPath() {
+        return elementsPath;
     }
 }

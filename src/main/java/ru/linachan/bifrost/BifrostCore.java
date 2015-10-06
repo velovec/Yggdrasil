@@ -3,9 +3,7 @@ package ru.linachan.bifrost;
 import gnu.io.*;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.TooManyListenersException;
 
@@ -25,12 +23,15 @@ public class BifrostCore implements SerialPortEventListener {
     public BifrostCore(YggdrasilCore core) {
         this.core = core;
 
+        this.core.logInfo("Initializing Bifrost Peripheral Bridge...");
+
         String peripheralPortName = this.core.getConfig("BifrostPort", "/dev/ttyACM0");
         this.exitOnFailure = Boolean.valueOf(this.core.getConfig("BifrostExitOnFailure", "false"));
 
         System.setProperty("gnu.io.rxtx.SerialPorts", "/dev/ttyACM0");
 
         try {
+            core.enableFakeOutput();
             CommPortIdentifier portIdentifier = null;
             Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
             while (portEnum.hasMoreElements()) {
@@ -47,6 +48,7 @@ public class BifrostCore implements SerialPortEventListener {
             } else {
                 this.core.logWarning("BifrostCore: Port '" + peripheralPortName + "' not found!");
             }
+            core.disableFakeOutput();
         } catch (PortInUseException e) {
             this.core.logException(e);
         }

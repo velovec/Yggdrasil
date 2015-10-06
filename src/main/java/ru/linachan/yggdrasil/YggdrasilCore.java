@@ -1,6 +1,6 @@
 package ru.linachan.yggdrasil;
 
-import ru.linachan.alfheim.*;
+import ru.linachan.alfheim.AlfheimCore;
 import ru.linachan.asgard.AsgardCore;
 import ru.linachan.bifrost.BifrostCore;
 import ru.linachan.fenrir.FenrirCore;
@@ -12,11 +12,14 @@ import ru.linachan.urd.UrdCore;
 import ru.linachan.valhalla.ValhallaCore;
 import ru.linachan.valkyrie.ValkyrieCore;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Properties;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class YggdrasilCore {
@@ -36,7 +39,14 @@ public class YggdrasilCore {
 
     private Properties cfg;
 
+    static {
+        LogManager.getLogManager().reset();
+    }
+
     private Logger logger = Logger.getLogger("Yggdrasil");
+
+    private PrintStream fakeOutput;
+    private PrintStream originalOutput;
 
     private boolean runningYggdrasil = true;
 
@@ -64,6 +74,8 @@ public class YggdrasilCore {
         this.browser    = new LokiCore(this);       // Instantiate web browser driver
         this.bridge     = new BifrostCore(this);    // Instantiate peripheral bridge
         this.scheduler  = new ValhallaCore(this);   // Instantiate scheduler
+
+        this.originalOutput = System.out;
     }
 
     private void registerShutdownHook() {
@@ -132,6 +144,16 @@ public class YggdrasilCore {
         scheduler.shutdownValhalla();
 
         this.logInfo("Yggdrasil is down...");
+    }
+
+    public void enableFakeOutput() {
+        this.fakeOutput = new PrintStream(new ByteArrayOutputStream());
+        System.setOut(this.fakeOutput);
+    }
+
+    public void disableFakeOutput() {
+        System.setOut(this.originalOutput);
+        this.fakeOutput = null;
     }
 
     public boolean executeTests() {

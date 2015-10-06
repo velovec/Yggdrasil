@@ -1,24 +1,24 @@
 package ru.linachan.bifrost;
 
-import gnu.io.*;
+import org.firmata4j.IODevice;
+import org.firmata4j.Pin;
+import org.firmata4j.firmata.FirmataDevice;
+import org.firmata4j.ui.JPinboard;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
-import java.io.*;
-import java.util.Enumeration;
-import java.util.TooManyListenersException;
+import javax.swing.*;
+import java.io.IOException;
+import java.util.Set;
 
-public class BifrostCore implements SerialPortEventListener {
+public class BifrostCore {
 
     private YggdrasilCore core;
-    private SerialPort peripheralPort;
 
-    private OutputStream portWriter;
-    private InputStream portReader;
-
-    private static final int TIME_OUT = 2000;
-    private static final int DATA_RATE = 9600;
+    private IODevice firmataDevice;
+    private BifrostEventListener eventListener;
 
     private boolean exitOnFailure;
+    private boolean runControlPanel;
 
     public BifrostCore(YggdrasilCore core) {
         this.core = core;
@@ -27,87 +27,51 @@ public class BifrostCore implements SerialPortEventListener {
 
         String peripheralPortName = this.core.getConfig("BifrostPort", "/dev/ttyACM0");
         this.exitOnFailure = Boolean.valueOf(this.core.getConfig("BifrostExitOnFailure", "false"));
+        this.runControlPanel = Boolean.valueOf(this.core.getConfig("BifrostRunControlPanel", "false"));
 
-        System.setProperty("gnu.io.rxtx.SerialPorts", "/dev/ttyACM0");
+        this.firmataDevice = new FirmataDevice(peripheralPortName);
+        this.eventListener = new BifrostEventListener(core);
 
         try {
-            core.enableFakeOutput();
-            CommPortIdentifier portIdentifier = null;
-            Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
-            while (portEnum.hasMoreElements()) {
-                CommPortIdentifier currentPortIdentifier = (CommPortIdentifier) portEnum.nextElement();
-                if (currentPortIdentifier.getName().equals(peripheralPortName)) {
-                    portIdentifier = currentPortIdentifier;
-                }
+            this.firmataDevice.addEventListener(eventListener);
+            this.firmataDevice.start();
+            this.firmataDevice.ensureInitializationIsDone();
+
+            if (this.runControlPanel) {
+                runControlPanel();
             }
-
-            if (portIdentifier != null) {
-                peripheralPort = (SerialPort) portIdentifier.open(this.getClass().getName(), TIME_OUT);
-                setupPeripheralPort();
-                this.core.logInfo("BifrostCore: Port '" + peripheralPortName + "' is ready!");
-            } else {
-                this.core.logWarning("BifrostCore: Port '" + peripheralPortName + "' not found!");
-            }
-            core.disableFakeOutput();
-        } catch (PortInUseException e) {
-            this.core.logException(e);
+        } catch (InterruptedException | IOException e) {
+            core.logException(e);
         }
     }
 
-    private void setupPeripheralPort() {
-        try {
-            peripheralPort.setSerialPortParams(
-                DATA_RATE,
-                SerialPort.DATABITS_8,
-                SerialPort.STOPBITS_1,
-                SerialPort.PARITY_NONE
-            );
-
-            portWriter = peripheralPort.getOutputStream();
-            portReader = peripheralPort.getInputStream();
-
-            peripheralPort.addEventListener(this);
-            peripheralPort.notifyOnDataAvailable(true);
-        } catch (IOException | TooManyListenersException | UnsupportedCommOperationException e) {
-            this.core.logException(e);
-        }
+    public void runControlPanel() {
+        JPinboard pinboard = new JPinboard(firmataDevice);
+        JFrame frame = new JFrame("Bifrost Control Panel");
+        frame.add(pinboard);
+        frame.pack();
+        frame.setVisible(true);
     }
 
-    @Override
-    public void serialEvent(SerialPortEvent serialPortEvent) {
-        switch(serialPortEvent.getEventType()) {
-            case SerialPortEvent.DATA_AVAILABLE:
-                try {
-                    byte[] incomingData = new byte[portReader.available()];
-                    int actuallyRead = portReader.read(incomingData);
-                    this.core.logInfo("BifrostCore: Read " + actuallyRead + " bytes of data: " + new String(incomingData));
-                } catch (IOException e) {
-                    this.core.logException(e);
-                }
-                break;
-            default:
-                this.core.logInfo("BifrostCore: Unhandled event on SerialPort: " + serialPortEvent.getEventType());
-        }
+    public Pin getPin(int pin) {
+        return firmataDevice.getPin(pin);
     }
 
-    public void writeByteArray(byte[] dataArray) {
-        if (peripheralPort != null) {
+    public Set<Pin> getPinList() {
+        return firmataDevice.getPins();
+    }
+
+    public void shutdownBifrost() {
+        if (firmataDevice.isReady()) {
             try {
-                this.portWriter.write(dataArray);
+                firmataDevice.stop();
             } catch (IOException e) {
-                this.core.logException(e);
+                core.logException(e);
             }
-        }
-    }
-
-    public synchronized void shutdownBifrost() {
-        if (peripheralPort != null) {
-            peripheralPort.removeEventListener();
-            peripheralPort.close();
         }
     }
 
     public boolean execute_tests() {
-        return !exitOnFailure || peripheralPort != null;
+        return !exitOnFailure || firmataDevice.isReady();
     }
 }

@@ -2,12 +2,14 @@ package ru.linachan.yggdrasil;
 
 import ru.linachan.alfheim.*;
 import ru.linachan.asgard.AsgardCore;
+import ru.linachan.bifrost.BifrostCore;
 import ru.linachan.fenrir.FenrirCore;
 import ru.linachan.jormungand.JormungandCore;
 import ru.linachan.loki.LokiCore;
 import ru.linachan.midgard.MidgardServer;
 import ru.linachan.niflheim.NiflheimCore;
 import ru.linachan.urd.UrdCore;
+import ru.linachan.valhalla.ValhallaCore;
 import ru.linachan.valkyrie.ValkyrieCore;
 
 import java.io.FileInputStream;
@@ -27,6 +29,8 @@ public class YggdrasilCore {
     private UrdCore cache;
     private AlfheimCore builder;
     private LokiCore browser;
+    private BifrostCore bridge;
+    private ValhallaCore scheduler;
 
     private YggdrasilShutdownHook shutdownHook;
 
@@ -58,6 +62,8 @@ public class YggdrasilCore {
         this.cache      = new UrdCore(this);        // Instantiate cache system
         this.builder    = new AlfheimCore(this);    // Instantiate image builder
         this.browser    = new LokiCore(this);       // Instantiate web browser driver
+        this.bridge     = new BifrostCore(this);    // Instantiate peripheral bridge
+        this.scheduler  = new ValhallaCore(this);   // Instantiate scheduler
     }
 
     private void registerShutdownHook() {
@@ -122,6 +128,8 @@ public class YggdrasilCore {
         }
 
         executor.shutdownJormungand();
+        bridge.shutdownBifrost();
+        scheduler.shutdownValhalla();
 
         this.logInfo("Yggdrasil is down...");
     }
@@ -153,7 +161,13 @@ public class YggdrasilCore {
         boolean browserOk = this.browser.execute_tests();
         logInfo("LokiCore: " + ((browserOk) ? "PASS" : "FAIL"));
 
-        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk && browserOk) {
+        boolean bridgeOk = this.bridge.execute_tests();
+        logInfo("BifrostCore: " + ((bridgeOk) ? "PASS" : "FAIL"));
+
+        boolean schedulerOk = this.scheduler.execute_tests();
+        logInfo("ValhallaCore: " + ((schedulerOk) ? "PASS" : "FAIL"));
+
+        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk && browserOk && bridgeOk && schedulerOk) {
             logInfo("YggdrasilCore: Self-diagnostic successfully completed");
             return true;
         } else {
@@ -200,4 +214,8 @@ public class YggdrasilCore {
     public LokiCore getBrowser() {
         return browser;
     }
+
+    public BifrostCore getBridge() { return bridge; }
+
+    public ValhallaCore getScheduler() { return scheduler; }
 }

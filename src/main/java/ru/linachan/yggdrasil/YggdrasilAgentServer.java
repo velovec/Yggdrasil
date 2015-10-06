@@ -1,8 +1,6 @@
 package ru.linachan.yggdrasil;
 
 import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Result;
 import ru.linachan.asgard.orm.Tables;
 
 import java.net.DatagramSocket;

@@ -68,7 +68,7 @@ public class ValhallaCore {
         ValhallaTask simpleTask = new ValhallaTask("simpleTask", new ValhallaRunnable(yggdrasilCore) {
             @Override
             public void run() {
-                core.logInfo("SimpleTask: Completed!");
+                logInfo("SimpleTask: Completed!");
             }
 
             @Override
@@ -78,12 +78,12 @@ public class ValhallaCore {
         ValhallaTask simplePeriodicTask = new ValhallaTask("simplePeriodicTask", new ValhallaRunnable(yggdrasilCore) {
             @Override
             public void run() {
-                core.logInfo("SimplePeriodicTask: Completed!");
+                logInfo("SimplePeriodicTask: Completed!");
             }
 
             @Override
             public void onCancel() {
-                core.logInfo("SimplePeriodicTask: Canceled!");
+                logInfo("SimplePeriodicTask: Canceled!");
             }
         }, 0, 10);
 

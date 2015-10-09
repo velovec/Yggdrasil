@@ -166,6 +166,10 @@ public class UrdCore {
         return resultString;
     }
 
+    public boolean hasStorageValue(String key) {
+        return cacheMap.containsKey(key);
+    }
+
     public String getStorageValue(String key, String defaultValue) {
         if (cacheMap.containsKey(key)) {
             return cacheMap.get(key);

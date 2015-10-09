@@ -1,18 +1,13 @@
 package ru.linachan.midgard;
 
-import ru.linachan.yggdrasil.YggdrasilCore;
+import ru.linachan.yggdrasil.service.YggdrasilService;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MidgardServer implements  Runnable {
-
-    private YggdrasilCore core;
+public class MidgardServer extends YggdrasilService {
 
     private int serverPort;
     private String serverHost;
@@ -20,31 +15,16 @@ public class MidgardServer implements  Runnable {
 
     private List<Thread> clients = new LinkedList<>();
 
-    public MidgardServer(YggdrasilCore yggdrasilCore) throws IOException {
-        this.core = yggdrasilCore;
-
-        this.core.logInfo("MidgardServer: Initializing MidgardWebServer...");
-
-        this.serverPort = Integer.parseInt(this.core.getConfig("MidgardHTTPPort", "8080"));
-        this.serverHost = this.core.getConfig("MidgardHTTPHost", "0.0.0.0");
-
-        this.serverSocket = new ServerSocket();
-
-        this.core.logInfo("MidgardServer: Start listening on " + this.serverHost + ":" + String.valueOf(this.serverPort));
-        this.serverSocket.bind(new InetSocketAddress(this.serverHost, this.serverPort));
-        this.serverSocket.setSoTimeout(1000);
-    }
-
     @Override
     public void run() {
-        while (this.core.isRunningYggdrasil()) {
+        while (core.isRunningYggdrasil()) {
             List<Thread> threadsToRemove = new LinkedList<>();
             for (Thread client : this.clients) {
                 if (!client.isAlive()) {
                     try {
                         client.join();
                     } catch (InterruptedException e) {
-                        this.core.logException(e);
+                        core.logException(e);
                     }
                     threadsToRemove.add(client);
                 }
@@ -56,15 +36,38 @@ public class MidgardServer implements  Runnable {
 
             try {
                 Socket sock = this.serverSocket.accept();
-                Thread client = new Thread(new MidgardClientHandler(this.core, sock));
+                Thread client = new Thread(new MidgardClientHandler(core, sock));
                 client.start();
                 this.clients.add(client);
             } catch (SocketTimeoutException e) {
                 // Do nothing
             } catch (IOException e) {
-                this.core.logException(e);
+                core.logException(e);
             }
         }
-        this.core.logInfo("MidgardServer: Finished.");
+        core.logInfo("MidgardServer: Finished.");
+    }
+
+    @Override
+    protected void onInit() {
+        core.logInfo("MidgardServer: Initializing MidgardWebServer...");
+
+        this.serverPort = Integer.parseInt(core.getConfig("MidgardHTTPPort", "8080"));
+        this.serverHost = core.getConfig("MidgardHTTPHost", "0.0.0.0");
+
+        try {
+            this.serverSocket = new ServerSocket();
+
+            core.logInfo("MidgardServer: Start listening on " + this.serverHost + ":" + String.valueOf(this.serverPort));
+            this.serverSocket.bind(new InetSocketAddress(this.serverHost, this.serverPort));
+            this.serverSocket.setSoTimeout(1000);
+        } catch (IOException e) {
+            core.logException(e);
+        }
+    }
+
+    @Override
+    protected void onShutdown() {
+
     }
 }

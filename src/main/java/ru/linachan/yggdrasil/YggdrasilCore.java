@@ -11,6 +11,7 @@ import ru.linachan.niflheim.NiflheimCore;
 import ru.linachan.urd.UrdCore;
 import ru.linachan.valhalla.ValhallaCore;
 import ru.linachan.valkyrie.ValkyrieCore;
+import ru.linachan.yggdrasil.service.YggdrasilServiceRunner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -64,16 +65,16 @@ public class YggdrasilCore {
         this.shutdownHook = new YggdrasilShutdownHook(this);
         this.registerShutdownHook();
 
-        this.db         = new AsgardCore(this);     // Instantiate main data storage system
-        this.security   = new NiflheimCore(this);   // Instantiate main security system
-        this.broker     = new ValkyrieCore(this);   // Instantiate main message transport system
-        this.auth       = new FenrirCore(this);     // Instantiate main authorization system
+        this.scheduler  = new ValhallaCore(this);   // Instantiate scheduler
         this.executor   = new JormungandCore(this); // Instantiate executor system
         this.cache      = new UrdCore(this);        // Instantiate cache system
+        this.db         = new AsgardCore(this);     // Instantiate main data storage system
+        this.broker     = new ValkyrieCore(this);   // Instantiate main message transport system
+        this.auth       = new FenrirCore(this);     // Instantiate main authorization system
+        this.security   = new NiflheimCore(this);   // Instantiate main security system
         this.builder    = new AlfheimCore(this);    // Instantiate image builder
         this.browser    = new LokiCore(this);       // Instantiate web browser driver
         this.bridge     = new BifrostCore(this);    // Instantiate peripheral bridge
-        this.scheduler  = new ValhallaCore(this);   // Instantiate scheduler
 
         this.originalOutput = System.out;
     }
@@ -116,25 +117,17 @@ public class YggdrasilCore {
 
     public void mainLoop() throws InterruptedException, IOException {
         if (executeTests()) {
-            MidgardServer webServer = new MidgardServer(this);
-            Thread webServerThread = new Thread(webServer);
-            webServerThread.start();
+            YggdrasilServiceRunner serviceRunner = new YggdrasilServiceRunner(this);
 
-            YggdrasilAgentServer agentServer = new YggdrasilAgentServer(this);
-            Thread agentServerThread = new Thread(agentServer);
-            agentServerThread.start();
+            serviceRunner.startService(new YggdrasilAgentServer());
+            serviceRunner.startService(new MidgardServer());
 
             while (this.runningYggdrasil) {
                 Thread.sleep(1000);
             }
             this.logInfo("Yggdrasil main loop finished. Waiting another services to finish...");
 
-            while (webServerThread.isAlive() || agentServerThread.isAlive()) {
-                Thread.sleep(1000);
-            }
-            webServerThread.join();
-            agentServerThread.join();
-
+            serviceRunner.shutdownServices();
         } else {
             shutdownYggdrasil();
         }

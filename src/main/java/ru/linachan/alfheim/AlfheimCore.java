@@ -5,6 +5,8 @@ import ru.linachan.asgard.orm.tables.ElementData;
 import ru.linachan.asgard.orm.tables.records.ElementDataRecord;
 import ru.linachan.jormungand.JormungandCore;
 import ru.linachan.jormungand.JormungandSubProcess;
+import ru.linachan.valhalla.ValhallaRunnable;
+import ru.linachan.valhalla.ValhallaTask;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
 import java.io.File;
@@ -20,6 +22,10 @@ public class AlfheimCore {
     private Boolean useSudo;
     private String workingDirectory;
 
+    private Map<String, AlfheimElement> elements = new HashMap<>();
+
+    private ValhallaTask elementUpdater;
+
     public AlfheimCore(YggdrasilCore yggdrasilCore) {
         this.yggdrasilCore = yggdrasilCore;
         this.jormungandCore = yggdrasilCore.getExecutionManager();
@@ -27,6 +33,25 @@ public class AlfheimCore {
         this.elementsPath = yggdrasilCore.getConfig("AlfheimElementsPath", "elements");
         this.useSudo = Boolean.parseBoolean(yggdrasilCore.getConfig("AlfheimUseSudo", "true"));
         this.workingDirectory = yggdrasilCore.getConfig("AlfheimImagePath", ".");
+
+        setUpUpdater();
+    }
+
+    private void setUpUpdater() {
+        this.elementUpdater = new ValhallaTask("AlfheimElementUpdater", new ValhallaRunnable(yggdrasilCore) {
+            @Override
+            public void run() {
+                logInfo("AlfheimElementUpdater: Updating elements...");
+                updateElements();
+                logInfo("AlfheimElementUpdater: Update completed");
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        }, 0, 3600);
+        this.yggdrasilCore.getScheduler().scheduleTask(elementUpdater);
     }
 
     public Long buildImage(AlfheimImage image) {
@@ -74,16 +99,20 @@ public class AlfheimCore {
         return true;
     }
 
-    public Map<String, AlfheimElement> getElements() {
-        Map<String, AlfheimElement> elements = new HashMap<>();
-
+    public void updateElements() {
         DSLContext ctx = yggdrasilCore.getDBManager().getContext();
 
         for (ElementDataRecord result : ctx.selectFrom(ElementData.ELEMENT_DATA).fetch()) {
             AlfheimElement element = new AlfheimElement(yggdrasilCore, this, result);
+            if (elements.containsKey(result.getName())) {
+                elements.remove(result.getName());
+            }
+            elements.put(result.getName(), element);
         }
 
-        return elements;
+        Long chmodProcessID = yggdrasilCore.getExecutionManager().prepareExecution("chmod", "+x", "-R", elementsPath);
+        yggdrasilCore.getExecutionManager().scheduleExecution(chmodProcessID);
+        yggdrasilCore.getExecutionManager().waitFor(chmodProcessID);
     }
 
     public String getElementsPath() {

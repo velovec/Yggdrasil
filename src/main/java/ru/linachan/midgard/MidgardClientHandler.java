@@ -21,7 +21,7 @@ public class MidgardClientHandler implements Runnable {
     private InputStream inputStream;
     private OutputStream outputStream;
 
-    private Map<String, MidgardRequestHandler> handlers = new HashMap<>();
+    private Map<String, MidgardAPIRequestHandler> apiHandlers = new HashMap<>();
 
     public MidgardClientHandler(YggdrasilCore core, Socket clientSocket) throws IOException {
         this.core = core;
@@ -32,7 +32,7 @@ public class MidgardClientHandler implements Runnable {
         this.inputStream = this.clientSocket.getInputStream();
         this.outputStream = this.clientSocket.getOutputStream();
 
-        setUpHandlers();
+        setUpApiHandlers();
     }
 
     private MidgardHTTPRequest readRequest() throws IOException {
@@ -74,24 +74,26 @@ public class MidgardClientHandler implements Runnable {
         }
     }
 
-    private void setUpHandlers() {
-        handlers.put("^/api/image/(.*?)$", new ImageBuilderAPI());
+    private void setUpApiHandlers() {
+        apiHandlers.put("^/api/image/(.*?)$", new ImageBuilderAPI());
     }
 
     private MidgardHTTPResponse handleRequest(MidgardHTTPRequest request) {
         MidgardHTTPResponse response = null;
 
-        for (String pattern: handlers.keySet()) {
-            if (request.matchURL(pattern)) {
-                String[] path = request.splitURLRegExp(pattern).get(0).split("/");
-                response = handlers.get(pattern).handleRequest(this.core, path, request);
-                break;
+        if (request.matchURL("^/api/(.*?)$")) {
+            for (String pattern : apiHandlers.keySet()) {
+                if (request.matchURL(pattern)) {
+                    String[] path = request.splitURLRegExp(pattern).get(0).split("/");
+                    response = apiHandlers.get(pattern).handleRequest(this.core, path, request);
+                    break;
+                }
             }
-        }
 
-        if (request.getMethod().equals("GET")&&(request.getParams().containsKey("callback"))) {
-            if (response != null) {
-                response.setJSONPParameters(Joiner.on("").join(request.getParams().get("callback")));
+            if (request.getMethod().equals("GET") && (request.getParams().containsKey("callback"))) {
+                if (response != null) {
+                    response.setJSONPParameters(Joiner.on("").join(request.getParams().get("callback")));
+                }
             }
         }
 

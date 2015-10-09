@@ -7,14 +7,14 @@ import ru.linachan.jormungand.JormungandSubProcess;
 import ru.linachan.jormungand.JormungandSubProcessState;
 import ru.linachan.midgard.MidgardHTTPRequest;
 import ru.linachan.midgard.MidgardHTTPResponse;
-import ru.linachan.midgard.MidgardRequestHandler;
+import ru.linachan.midgard.MidgardAPIRequestHandler;
 import ru.linachan.util.Pair;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
 import java.util.List;
 
 @SuppressWarnings({"unchecked"})
-public class ImageBuilderAPI implements MidgardRequestHandler {
+public class ImageBuilderAPI implements MidgardAPIRequestHandler {
     @Override
     public MidgardHTTPResponse handleRequest(YggdrasilCore core, String[] path, MidgardHTTPRequest request) {
         MidgardHTTPResponse response = new MidgardHTTPResponse();

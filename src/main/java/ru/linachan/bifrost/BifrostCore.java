@@ -20,6 +20,8 @@ public class BifrostCore {
     private boolean exitOnFailure;
     private boolean runControlPanel;
 
+    private boolean deviceIsReady;
+
     public BifrostCore(YggdrasilCore core) {
         this.core = core;
 
@@ -37,12 +39,20 @@ public class BifrostCore {
             this.firmataDevice.start();
             this.firmataDevice.ensureInitializationIsDone();
 
+            this.deviceIsReady = true;
+
             if (this.runControlPanel) {
                 runControlPanel();
             }
         } catch (InterruptedException | IOException e) {
-            core.logException(e);
+            if (e.getMessage().equals("Cannot start firmata device")) {
+                this.deviceIsReady = false;
+            } else {
+                core.logException(e);
+            }
         }
+
+        this.core.logInfo("BifrostCore: Firmata device at '" + peripheralPortName + "' " + ((deviceIsReady) ? "is ready" : "is not ready"));
     }
 
     public void runControlPanel() {
@@ -62,7 +72,7 @@ public class BifrostCore {
     }
 
     public void shutdownBifrost() {
-        if (firmataDevice.isReady()) {
+        if (deviceIsReady&&firmataDevice.isReady()) {
             try {
                 firmataDevice.stop();
             } catch (IOException e) {

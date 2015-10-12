@@ -5,29 +5,17 @@ import org.json.simple.JSONObject;
 import ru.linachan.alfheim.AlfheimImage;
 import ru.linachan.jormungand.JormungandSubProcess;
 import ru.linachan.jormungand.JormungandSubProcessState;
-import ru.linachan.midgard.MidgardHTTPRequest;
-import ru.linachan.midgard.MidgardHTTPResponse;
-import ru.linachan.midgard.MidgardAPIRequestHandler;
+import ru.linachan.midgard.MidgardRequestHandler;
 import ru.linachan.util.Pair;
-import ru.linachan.yggdrasil.YggdrasilCore;
 
 import java.util.List;
 
 @SuppressWarnings({"unchecked"})
-public class ImageBuilderAPI implements MidgardAPIRequestHandler {
+public class ImageBuilderAPI extends MidgardRequestHandler {
+
     @Override
-    public MidgardHTTPResponse handleRequest(YggdrasilCore core, String[] path, MidgardHTTPRequest request) {
-        MidgardHTTPResponse response = new MidgardHTTPResponse();
-
-        if (request.matchURL("^/api/image/build$")) {
-            if (request.getMethod().equals("POST")) {
-                AlfheimImage image = new AlfheimImage(request.getData());
-
-                JSONObject responseData = new JSONObject();
-                responseData.put("build_id", core.getImageBuilder().buildImage(image));
-                response.setResponseData(responseData);
-            }
-        } else if (request.matchURL("^/api/image/list$")) {
+    protected void GET() {
+        if (request.matchURL("^/api/image/list$")) {
             List<Pair<Long, JormungandSubProcess>> buildList = core.getExecutionManager().getProcessesByTag("alfheimBuild");
 
             JSONObject responseData = new JSONObject();
@@ -60,7 +48,36 @@ public class ImageBuilderAPI implements MidgardAPIRequestHandler {
             }
             response.setResponseData(responseData);
         }
+    }
 
-        return response;
+    @Override
+    protected void POST() {
+        if (request.matchURL("^/api/image/build$")) {
+            AlfheimImage image = new AlfheimImage(request.getData());
+
+            JSONObject responseData = new JSONObject();
+            responseData.put("build_id", core.getImageBuilder().buildImage(image));
+            response.setResponseData(responseData);
+        }
+    }
+
+    @Override
+    protected void PUT() {
+        methodNotImplemented();
+    }
+
+    @Override
+    protected void DELETE() {
+        methodNotImplemented();
+    }
+
+    @Override
+    protected void OPTIONS() {
+        methodNotImplemented();
+    }
+
+    @Override
+    protected void HEAD() {
+        methodNotImplemented();
     }
 }

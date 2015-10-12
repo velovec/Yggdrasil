@@ -80,4 +80,7 @@ public class ImageBuilderAPI extends MidgardRequestHandler {
     protected void HEAD() {
         methodNotImplemented();
     }
+
+    @Override
+    protected void onInit() {}
 }

@@ -4,6 +4,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,7 +23,28 @@ public class MidgardHTTPRequest {
     private String method = "GET";
     private String path = "/";
 
-    public void addHeader(String raw_header) {
+    public MidgardHTTPRequest(InputStream clientInputStream) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(clientInputStream));
+        while(true) {
+            try {
+                String raw_header = reader.readLine();
+                if (raw_header == null || raw_header.trim().length() == 0) {
+                    if (this.getMethod().equals("POST") || this.getMethod().equals("PUT")) {
+                        char[] raw_data = new char[this.getContentLength()];
+                        reader.read(raw_data);
+                        this.addData(new String(raw_data));
+                    }
+                    break;
+                } else {
+                    this.addHeader(raw_header);
+                }
+            } catch(SocketTimeoutException e) {
+                break;
+            }
+        }
+    }
+
+    private void addHeader(String raw_header) {
         if (Pattern.matches("[^:]+: .*", raw_header)) {
             String[] header = raw_header.split(": ");
 
@@ -58,17 +84,17 @@ public class MidgardHTTPRequest {
         }
     }
 
-    public String getMethod() {
-        return method;
-    }
-
-    public void addData(String post) {
+    private void addData(String post) {
         JSONParser parser = new JSONParser();
         try {
             this.requestData = (JSONObject)parser.parse(post);
         } catch (ParseException e) {
             // Incorrect request
         }
+    }
+
+    public String getMethod() {
+        return method;
     }
 
     public JSONObject getData() {

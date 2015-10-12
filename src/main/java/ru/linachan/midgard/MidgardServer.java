@@ -9,8 +9,6 @@ import java.util.List;
 
 public class MidgardServer extends YggdrasilService {
 
-    private int serverPort;
-    private String serverHost;
     private ServerSocket serverSocket;
 
     private List<Thread> clients = new LinkedList<>();
@@ -52,14 +50,14 @@ public class MidgardServer extends YggdrasilService {
     protected void onInit() {
         core.logInfo("MidgardServer: Initializing MidgardWebServer...");
 
-        this.serverPort = Integer.parseInt(core.getConfig("MidgardHTTPPort", "8080"));
-        this.serverHost = core.getConfig("MidgardHTTPHost", "0.0.0.0");
+        int serverPort = Integer.parseInt(core.getConfig("MidgardHTTPPort", "8080"));
+        String serverHost = core.getConfig("MidgardHTTPHost", "0.0.0.0");
 
         try {
             this.serverSocket = new ServerSocket();
 
-            core.logInfo("MidgardServer: Start listening on " + this.serverHost + ":" + String.valueOf(this.serverPort));
-            this.serverSocket.bind(new InetSocketAddress(this.serverHost, this.serverPort));
+            core.logInfo("MidgardServer: Start listening on " + serverHost + ":" + String.valueOf(serverPort));
+            this.serverSocket.bind(new InetSocketAddress(serverHost, serverPort));
             this.serverSocket.setSoTimeout(1000);
         } catch (IOException e) {
             core.logException(e);
@@ -68,6 +66,10 @@ public class MidgardServer extends YggdrasilService {
 
     @Override
     protected void onShutdown() {
-
+        try {
+            this.serverSocket.close();
+        } catch (IOException e) {
+            core.logException(e);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package ru.linachan.midgard;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.json.simple.JSONObject;
 
 import java.util.*;
@@ -10,7 +11,7 @@ public class MidgardHTTPResponse {
     private String contentType = "text/html";
     private Map<String, String> headers = new HashMap<>();
     private Map<String, String> cookies = new HashMap<>();
-    private String responseData = "";
+    private byte[] responseData = new byte[0];
 
     private Boolean headMode = false;
 
@@ -48,17 +49,21 @@ public class MidgardHTTPResponse {
     
     public void setResponseData(JSONObject responseData) {
         this.contentType = "application/json";
-        this.responseData = responseData.toJSONString();
+        this.responseData = responseData.toJSONString().getBytes();
     }
 
     public void setResponseData(String responseData) {
+        this.responseData = responseData.getBytes();
+    }
+
+    public void setResponseData(byte[] responseData) {
         this.responseData = responseData;
     }
 
-    public byte[] toByteArray() {
+    public byte[] getBytes() {
         String content = "HTTP/1.1 " + this.responseCode + "\r\n";
 
-        int contentLength = this.responseData.getBytes().length;
+        int contentLength = this.responseData.length;
 
         this.setHeader("Content-Type", this.contentType);
         this.setHeader("Content-Length", String.valueOf(contentLength));
@@ -72,10 +77,14 @@ public class MidgardHTTPResponse {
 
         content += "\r\n";
 
+        byte[] contentBytes;
+
         if (!this.headMode) {
-            content += this.responseData;
+            contentBytes = ArrayUtils.addAll(content.getBytes(), this.responseData);
+        } else {
+            contentBytes = content.getBytes();
         }
 
-        return content.getBytes();
+        return contentBytes;
     }
 }

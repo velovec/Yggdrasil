@@ -4,11 +4,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.SocketTimeoutException;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,36 +58,55 @@ public class MidgardHTTPRequest {
 
             if(header[1].contains("?")) {
                 this.path = header[1].split("\\?")[0];
-                for(String raw_param : header[1].split("\\?")[1].split("&")) {
-                    String param_name, param_value;
-                    if (raw_param.contains("=")) {
-                        String[] param = raw_param.split("=");
-                        param_name = param[0];
-                        param_value = param[1];
-                    } else {
-                        param_name = raw_param;
-                        param_value = null;
-                    }
-                    if(requestParams.containsKey(param_name)) {
-                        requestParams.get(param_name).add(param_value);
-                    } else {
-                        Set<String> values = new HashSet<>();
-                        values.add(param_value);
-                        requestParams.put(param_name, values);
-                    }
-                }
+                parseRequest(header[1].split("\\?")[1]);
             } else {
                 this.path = header[1];
             }
         }
     }
 
+    private void parseRequest(String requestURI) {
+        for (String raw_param : requestURI.split("&")) {
+            try {
+                String param_name, param_value;
+                if (raw_param.contains("=")) {
+                    String[] param = raw_param.split("=");
+                    param_name = URLDecoder.decode(param[0], "UTF-8");
+                    param_value = URLDecoder.decode(param[1], "UTF-8");
+                } else {
+                    param_name = URLDecoder.decode(raw_param, "UTF-8");
+                    param_value = "true";
+                }
+
+                if (requestParams.containsKey(param_name)) {
+                    requestParams.get(param_name).add(param_value);
+                } else {
+                    Set<String> values = new HashSet<>();
+                    values.add(param_value);
+                    requestParams.put(param_name, values);
+                }
+            } catch (UnsupportedEncodingException e) {}
+        }
+    }
+
     private void addData(String post) {
-        JSONParser parser = new JSONParser();
-        try {
-            this.requestData = (JSONObject)parser.parse(post);
-        } catch (ParseException e) {
-            // Incorrect request
+        String contentType = (headers.containsKey("Content-Type")) ? headers.get("Content-Type") : "text/plain";
+
+        switch (contentType) {
+            case "application/json":
+                JSONParser parser = new JSONParser();
+                try {
+                    this.requestData = (JSONObject) parser.parse(post);
+                } catch (ParseException e) {
+                    // Incorrect request
+                }
+                break;
+            case "application/x-www-form-urlencoded":
+            case "multipart/form-data":
+                parseRequest(post);
+                break;
+            default:
+                break;
         }
     }
 

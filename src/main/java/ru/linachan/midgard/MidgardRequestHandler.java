@@ -20,6 +20,8 @@ public abstract class MidgardRequestHandler {
     public MidgardRequestHandler() {
         this.templateEngine = new VelocityEngine();
         this.templateEngine.init();
+
+        onInit();
     }
 
     public MidgardHTTPResponse handleRequest(YggdrasilCore core, MidgardHTTPRequest request) {
@@ -45,10 +47,13 @@ public abstract class MidgardRequestHandler {
         this.response.setResponseData("Method Not Allowed");
     }
 
-    protected String renderTemplate(String templatePath, VelocityContext context) {
+    protected String renderTemplate(String templatePath, String pageTitle, VelocityContext context) {
         Path fullTemplatePath = Paths.get(core.getConfig("MidgardTemplatePath", "templates")).resolve(templatePath);
         Template template = templateEngine.getTemplate(fullTemplatePath.toString());
         StringWriter output = new StringWriter();
+
+        context.put("SYSTEM_NAME", "Yggdrasil");
+        context.put("PAGE_TITLE", pageTitle);
 
         template.merge(context, output);
 
@@ -61,5 +66,6 @@ public abstract class MidgardRequestHandler {
     protected abstract void DELETE();
     protected abstract void OPTIONS();
     protected abstract void HEAD();
+    protected abstract void onInit();
 
 }

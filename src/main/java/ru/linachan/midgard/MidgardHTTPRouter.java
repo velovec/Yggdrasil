@@ -1,6 +1,9 @@
 package ru.linachan.midgard;
 
 import ru.linachan.midgard.handler.api.ImageBuilderAPI;
+import ru.linachan.midgard.handler.html.LoginPage;
+import ru.linachan.midgard.handler.html.TemplatePage;
+import ru.linachan.midgard.handler.html.StaticFiles;
 import ru.linachan.yggdrasil.YggdrasilCore;
 
 import java.util.HashMap;
@@ -18,6 +21,13 @@ public class MidgardHTTPRouter {
     }
 
     private void setUpRoutes() {
+        addRoute("^/static/(.*?)$", new StaticFiles());
+
+        // HTML
+        addRoute("^/$", new TemplatePage("index.html", "Index"));
+        addRoute("^/login/$", new LoginPage());
+
+        // API
         addRoute("^/api/image/(.*?)$", new ImageBuilderAPI());
     }
 

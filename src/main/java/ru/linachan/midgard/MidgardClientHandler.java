@@ -45,7 +45,7 @@ public class MidgardClientHandler implements Runnable {
     }
 
     private void writeResponse(MidgardHTTPResponse response) throws IOException {
-        this.outputStream.write(response.toByteArray());
+        this.outputStream.write(response.getBytes());
         this.outputStream.flush();
     }
 }

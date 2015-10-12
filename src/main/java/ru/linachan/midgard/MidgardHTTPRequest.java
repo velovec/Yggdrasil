@@ -34,24 +34,22 @@ public class MidgardHTTPRequest {
 
             if(header[1].contains("?")) {
                 this.path = header[1].split("\\?")[0];
-                if (this.method.toUpperCase().equals("GET")) {
-                    for(String raw_param : header[1].split("\\?")[1].split("&")) {
-                        String param_name, param_value;
-                        if (raw_param.contains("=")) {
-                            String[] param = raw_param.split("=");
-                            param_name = param[0];
-                            param_value = param[1];
-                        } else {
-                            param_name = raw_param;
-                            param_value = null;
-                        }
-                        if(requestParams.containsKey(param_name)) {
-                            requestParams.get(param_name).add(param_value);
-                        } else {
-                            Set<String> values = new HashSet<>();
-                            values.add(param_value);
-                            requestParams.put(param_name, values);
-                        }
+                for(String raw_param : header[1].split("\\?")[1].split("&")) {
+                    String param_name, param_value;
+                    if (raw_param.contains("=")) {
+                        String[] param = raw_param.split("=");
+                        param_name = param[0];
+                        param_value = param[1];
+                    } else {
+                        param_name = raw_param;
+                        param_value = null;
+                    }
+                    if(requestParams.containsKey(param_name)) {
+                        requestParams.get(param_name).add(param_value);
+                    } else {
+                        Set<String> values = new HashSet<>();
+                        values.add(param_value);
+                        requestParams.put(param_name, values);
                     }
                 }
             } else {

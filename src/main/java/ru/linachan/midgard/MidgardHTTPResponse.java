@@ -7,13 +7,18 @@ import java.util.*;
 public class MidgardHTTPResponse {
 
     private String responseCode = "200 OK";
-    private String contentType = "application/json";
+    private String contentType = "text/html";
     private Map<String, String> headers = new HashMap<>();
     private Map<String, String> cookies = new HashMap<>();
-    private JSONObject responseData = new JSONObject();
+    private String responseData = "";
 
-    private boolean toJSONp = false;
-    private String callbackName = null;
+    private Boolean headMode = false;
+
+    public MidgardHTTPResponse() {}
+
+    public MidgardHTTPResponse(Boolean headMode) {
+        this.headMode = headMode;
+    }
 
     public void setCookie(String name, String value) {
         if(cookies.containsKey(name)) {
@@ -33,24 +38,27 @@ public class MidgardHTTPResponse {
         }
     }
 
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
     public void setResponseCode(MidgardHTTPCodes responseCode) {
         this.responseCode = responseCode.getCode();
     }
     
     public void setResponseData(JSONObject responseData) {
-        this.responseData = responseData;
+        this.contentType = "application/json";
+        this.responseData = responseData.toJSONString();
     }
 
-    public void setJSONPParameters(String callbackName) {
-        this.toJSONp = true;
-        this.callbackName = callbackName;
+    public void setResponseData(String responseData) {
+        this.responseData = responseData;
     }
 
     public byte[] toByteArray() {
         String content = "HTTP/1.1 " + this.responseCode + "\r\n";
 
-        int contentLength = this.responseData.toJSONString().getBytes().length;
-        contentLength += (toJSONp) ? callbackName.length() + 3 : 0;
+        int contentLength = this.responseData.getBytes().length;
 
         this.setHeader("Content-Type", this.contentType);
         this.setHeader("Content-Length", String.valueOf(contentLength));
@@ -64,12 +72,8 @@ public class MidgardHTTPResponse {
 
         content += "\r\n";
 
-        if (toJSONp) {
-            content += callbackName + "(";
-            content += this.responseData.toJSONString();
-            content += ");";
-        } else {
-            content += this.responseData.toJSONString();
+        if (!this.headMode) {
+            content += this.responseData;
         }
 
         return content.getBytes();

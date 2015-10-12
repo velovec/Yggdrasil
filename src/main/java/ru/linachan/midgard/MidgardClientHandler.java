@@ -21,7 +21,7 @@ public class MidgardClientHandler implements Runnable {
     private InputStream inputStream;
     private OutputStream outputStream;
 
-    private Map<String, MidgardAPIRequestHandler> apiHandlers = new HashMap<>();
+    private Map<String, MidgardRequestHandler> apiHandlers = new HashMap<>();
 
     public MidgardClientHandler(YggdrasilCore core, Socket clientSocket) throws IOException {
         this.core = core;
@@ -84,15 +84,8 @@ public class MidgardClientHandler implements Runnable {
         if (request.matchURL("^/api/(.*?)$")) {
             for (String pattern : apiHandlers.keySet()) {
                 if (request.matchURL(pattern)) {
-                    String[] path = request.splitURLRegExp(pattern).get(0).split("/");
-                    response = apiHandlers.get(pattern).handleRequest(this.core, path, request);
+                    response = apiHandlers.get(pattern).handleRequest(this.core, request);
                     break;
-                }
-            }
-
-            if (request.getMethod().equals("GET") && (request.getParams().containsKey("callback"))) {
-                if (response != null) {
-                    response.setJSONPParameters(Joiner.on("").join(request.getParams().get("callback")));
                 }
             }
         }
@@ -100,12 +93,7 @@ public class MidgardClientHandler implements Runnable {
         if (response == null) {
             response = new MidgardHTTPResponse();
             response.setResponseCode(MidgardHTTPCodes.NOT_FOUND);
-
-            JSONObject responseData = new JSONObject();
-
-            responseData.put("message", "Resource not found");
-
-            response.setResponseData(responseData);
+            response.setResponseData("");
         }
 
         return response;

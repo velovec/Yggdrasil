@@ -36,6 +36,7 @@ public class YggdrasilCore {
     private LokiCore browser;
     private BifrostCore bridge;
     private ValhallaCore scheduler;
+    private SkuldCore voice;
 
     private YggdrasilShutdownHook shutdownHook;
     private YggdrasilServiceRunner serviceRunner;
@@ -79,6 +80,7 @@ public class YggdrasilCore {
         this.builder    = new AlfheimCore(this);    // Instantiate image builder
         this.browser    = new LokiCore(this);       // Instantiate web browser driver
         this.bridge     = new BifrostCore(this);    // Instantiate peripheral bridge
+        this.voice      = new SkuldCore(this);      // Instantiate real-time voice processor
 
         this.originalOutput = System.out;
     }
@@ -192,7 +194,10 @@ public class YggdrasilCore {
         boolean schedulerOk = this.scheduler.execute_tests();
         logInfo("ValhallaCore: " + ((schedulerOk) ? "PASS" : "FAIL"));
 
-        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk && browserOk && bridgeOk && schedulerOk) {
+        boolean voiceOk = this.voice.execute_tests();
+        logInfo("SkuldCore: " + ((voiceOk) ? "PASS" : "FAIL"));
+
+        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk && browserOk && bridgeOk && schedulerOk && voiceOk) {
             logInfo("YggdrasilCore: Self-diagnostic successfully completed");
             return true;
         } else {

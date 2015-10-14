@@ -7,12 +7,15 @@ public abstract class YggdrasilService implements Runnable {
     protected YggdrasilCore core;
     private String serviceName;
     private Thread serviceThread;
+    protected Boolean isRunning;
 
     public void initializeService(YggdrasilCore core, String serviceName) {
         this.core = core;
         this.serviceName = serviceName;
 
         this.core.logInfo("Initializing service '" + serviceName + "'...");
+
+        this.isRunning = true;
 
         onInit();
     }
@@ -33,6 +36,8 @@ public abstract class YggdrasilService implements Runnable {
         this.core.logInfo("Shutting service '" + serviceName + "' down...");
 
         onShutdown();
+
+        this.isRunning = false;
 
         if (wait) {
             while (serviceThread.isAlive()) {

@@ -6,18 +6,19 @@ import ru.linachan.bifrost.BifrostCore;
 import ru.linachan.fenrir.FenrirCore;
 import ru.linachan.jormungand.JormungandCore;
 import ru.linachan.loki.LokiCore;
-import ru.linachan.midgard.MidgardServer;
 import ru.linachan.niflheim.NiflheimCore;
+import ru.linachan.skuld.SkuldCore;
 import ru.linachan.urd.UrdCore;
 import ru.linachan.valhalla.ValhallaCore;
 import ru.linachan.valkyrie.ValkyrieCore;
+import ru.linachan.yggdrasil.service.YggdrasilService;
 import ru.linachan.yggdrasil.service.YggdrasilServiceRunner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
@@ -37,6 +38,7 @@ public class YggdrasilCore {
     private ValhallaCore scheduler;
 
     private YggdrasilShutdownHook shutdownHook;
+    private YggdrasilServiceRunner serviceRunner;
 
     private Properties cfg;
 
@@ -63,6 +65,8 @@ public class YggdrasilCore {
         }
 
         this.shutdownHook = new YggdrasilShutdownHook(this);
+        this.serviceRunner = new YggdrasilServiceRunner(this);
+
         this.registerShutdownHook();
 
         this.scheduler  = new ValhallaCore(this);   // Instantiate scheduler
@@ -117,10 +121,8 @@ public class YggdrasilCore {
 
     public void mainLoop() throws InterruptedException, IOException {
         if (executeTests()) {
-            YggdrasilServiceRunner serviceRunner = new YggdrasilServiceRunner(this);
-
-            serviceRunner.startService(new YggdrasilAgentServer());
-            serviceRunner.startService(new MidgardServer());
+            startService(new YggdrasilAgentServer());
+            // startService(new MidgardServer()); // TODO: Move MidgardServer start to MidgardCore
 
             while (this.runningYggdrasil) {
                 Thread.sleep(1000);
@@ -137,6 +139,14 @@ public class YggdrasilCore {
         scheduler.shutdownValhalla();
 
         this.logInfo("Yggdrasil is down...");
+    }
+
+    public void startService(YggdrasilService service) {
+        this.serviceRunner.startService(service);
+    }
+
+    public void stopService(String serviceName, Boolean wait) {
+        this.serviceRunner.stopService(serviceName, wait);
     }
 
     public void enableFakeOutput() {

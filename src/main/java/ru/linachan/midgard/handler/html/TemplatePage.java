@@ -3,6 +3,8 @@ package ru.linachan.midgard.handler.html;
 import org.apache.velocity.VelocityContext;
 import ru.linachan.midgard.MidgardRequestHandler;
 
+import java.util.ArrayList;
+
 public class TemplatePage extends MidgardRequestHandler {
 
     private String pageTemplate;
@@ -16,6 +18,13 @@ public class TemplatePage extends MidgardRequestHandler {
     @Override
     protected void GET() {
         VelocityContext ctx = new VelocityContext();
+
+        ArrayList notificationList = new ArrayList();
+        ArrayList taskList = new ArrayList();
+
+        ctx.put("notificationList", notificationList);
+        ctx.put("taskList", taskList);
+
         response.setResponseData(renderTemplate(pageTemplate, pageTitle, ctx));
     }
 

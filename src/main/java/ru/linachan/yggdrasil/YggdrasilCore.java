@@ -253,4 +253,8 @@ public class YggdrasilCore {
     public BifrostCore getBridge() { return bridge; }
 
     public ValhallaCore getScheduler() { return scheduler; }
+
+    public SkuldCore getVoiceProcessor() {
+        return voice;
+    }
 }

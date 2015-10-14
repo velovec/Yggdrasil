@@ -48,4 +48,8 @@ public abstract class YggdrasilService implements Runnable {
 
         this.serviceThread.interrupt();
     }
+
+    public boolean isRunning() {
+        return isRunning;
+    }
 }

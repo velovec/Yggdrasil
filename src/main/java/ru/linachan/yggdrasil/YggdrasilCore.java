@@ -6,6 +6,7 @@ import ru.linachan.bifrost.BifrostCore;
 import ru.linachan.fenrir.FenrirCore;
 import ru.linachan.jormungand.JormungandCore;
 import ru.linachan.loki.LokiCore;
+import ru.linachan.midgard.MidgardCore;
 import ru.linachan.niflheim.NiflheimCore;
 import ru.linachan.skuld.SkuldCore;
 import ru.linachan.urd.UrdCore;
@@ -37,6 +38,7 @@ public class YggdrasilCore {
     private BifrostCore bridge;
     private ValhallaCore scheduler;
     private SkuldCore voice;
+    private MidgardCore api;
 
     private YggdrasilShutdownHook shutdownHook;
     private YggdrasilServiceRunner serviceRunner;
@@ -81,6 +83,7 @@ public class YggdrasilCore {
         this.browser    = new LokiCore(this);       // Instantiate web browser driver
         this.bridge     = new BifrostCore(this);    // Instantiate peripheral bridge
         this.voice      = new SkuldCore(this);      // Instantiate real-time voice processor
+        this.api        = new MidgardCore(this);    // Instantiate API server
 
         this.originalOutput = System.out;
     }
@@ -124,7 +127,6 @@ public class YggdrasilCore {
     public void mainLoop() throws InterruptedException, IOException {
         if (executeTests()) {
             startService(new YggdrasilAgentServer());
-            // startService(new MidgardServer()); // TODO: Move MidgardServer start to MidgardCore
 
             while (this.runningYggdrasil) {
                 Thread.sleep(1000);
@@ -197,7 +199,10 @@ public class YggdrasilCore {
         boolean voiceOk = this.voice.execute_tests();
         logInfo("SkuldCore: " + ((voiceOk) ? "PASS" : "FAIL"));
 
-        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk && browserOk && bridgeOk && schedulerOk && voiceOk) {
+        boolean apiOk = this.api.execute_tests();
+        logInfo("MidgardCore: " + ((apiOk) ? "PASS" : "FAIL"));
+
+        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk && browserOk && bridgeOk && schedulerOk && voiceOk && apiOk) {
             logInfo("YggdrasilCore: Self-diagnostic successfully completed");
             return true;
         } else {

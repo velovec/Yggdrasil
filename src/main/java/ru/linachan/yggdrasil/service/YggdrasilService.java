@@ -13,7 +13,7 @@ public abstract class YggdrasilService implements Runnable {
         this.core = core;
         this.serviceName = serviceName;
 
-        this.core.logInfo("Initializing service '" + serviceName + "'...");
+        this.core.logInfo("YggdrasilService: Service '" + serviceName + "' initialized");
 
         this.isRunning = true;
 
@@ -33,7 +33,7 @@ public abstract class YggdrasilService implements Runnable {
     }
 
     public void stop(Boolean wait) throws InterruptedException {
-        this.core.logInfo("Shutting service '" + serviceName + "' down...");
+        this.core.logInfo("YggdrasilService: Service '" + serviceName + "' stopped");
 
         onShutdown();
 

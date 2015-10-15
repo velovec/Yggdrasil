@@ -1,20 +1,25 @@
 package ru.linachan.loki;
 
-import ru.linachan.yggdrasil.YggdrasilCore;
+import ru.linachan.yggdrasil.component.YggdrasilComponent;
 
-public class LokiCore {
+public class LokiCore extends YggdrasilComponent {
 
-    private YggdrasilCore core;
+    @Override
+    protected void onInit() {
 
-    public LokiCore(YggdrasilCore core) {
-        this.core = core;
+    }
+
+    @Override
+    protected void onShutdown() {
+
+    }
+
+    @Override
+    public boolean executeTests() {
+        return true;
     }
 
     public LokiDriver getDriver() {
         return new LokiDriver(this.core, this);
-    }
-
-    public boolean execute_tests() {
-        return true;
     }
 }

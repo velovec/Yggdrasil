@@ -1,6 +1,6 @@
 package ru.linachan.urd;
 
-import ru.linachan.yggdrasil.YggdrasilCore;
+import ru.linachan.yggdrasil.component.YggdrasilComponent;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -9,28 +9,59 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-public class UrdCore {
+public class UrdCore extends YggdrasilComponent {
 
-    private YggdrasilCore core;
     private final byte[] MAGIC_HEADER = "URDv0.1".getBytes();
     private String cacheFilePath;
     private File cacheFile;
     private Semaphore cacheLock;
     private Map<String, String> cacheMap = new HashMap<>();
 
-    public UrdCore(YggdrasilCore yggdrasilCore) {
-        this.core = yggdrasilCore;
+    @Override
+    protected void onInit() {
+        cacheFilePath = core.getConfig("UrdCacheFile", "UrdStorage.urd");
+        cacheFile = new File(cacheFilePath);
 
-        this.cacheFilePath = this.core.getConfig("UrdCacheFile", "UrdStorage.urd");
-        this.cacheFile = new File(this.cacheFilePath);
+        cacheLock = new Semaphore(1);
 
-        this.cacheLock = new Semaphore(1);
-
-        if (!this.cacheFile.exists()) {
+        if (!cacheFile.exists()) {
             initializeCacheStorage();
         }
 
         readCacheFile();
+    }
+
+    @Override
+    protected void onShutdown() {
+        writeCacheFile();
+    }
+
+    @Override
+    public boolean executeTests() {
+        putStorageValue("test_key", "test_value");
+        putBinaryStorageValue("test_binary_key", stringToByteArray("FFE0"));
+
+        String test_value = getStorageValue("test_key", null);
+        byte[] test_binary_value = getBinaryStorageValue("test_binary_key", new byte[0]);
+
+        Boolean res = test_value.equals("test_value")&&Arrays.equals(test_binary_value, stringToByteArray("FFE0"));
+
+        if (!res) {
+            core.logWarning("Data mismatch:");
+            core.logWarning("'" + test_value + "' should be 'test_value'");
+            core.logWarning("'" + byteArrayToString(test_binary_value) + "' should be 'FFE0'");
+        }
+
+        res = res && unsetStorageValue("test_key");
+        res = res && unsetStorageValue("test_binary_key");
+
+        if (!res) {
+            for (String key : cacheMap.keySet()) {
+                core.logWarning(key + " :: " + cacheMap.get(key));
+            }
+        }
+
+        return res;
     }
 
     private boolean lock() {
@@ -38,7 +69,7 @@ public class UrdCore {
             cacheLock.acquire();
             return true;
         } catch (InterruptedException e) {
-            this.core.logException(e);
+            core.logException(e);
         }
 
         return false;
@@ -210,7 +241,7 @@ public class UrdCore {
         }
         return false;
     }
-    
+
     private void initializeCacheStorage() {
         if (lock()) {
             try {
@@ -225,32 +256,5 @@ public class UrdCore {
 
             unlock();
         }
-    }
-
-    public boolean execute_tests() {
-        putStorageValue("test_key", "test_value");
-        putBinaryStorageValue("test_binary_key", stringToByteArray("FFE0"));
-
-        String test_value = getStorageValue("test_key", null);
-        byte[] test_binary_value = getBinaryStorageValue("test_binary_key", new byte[0]);
-
-        Boolean res = test_value.equals("test_value")&&Arrays.equals(test_binary_value, stringToByteArray("FFE0"));
-
-        if (!res) {
-            this.core.logWarning("Data mismatch:");
-            this.core.logWarning("'" + test_value + "' should be 'test_value'");
-            this.core.logWarning("'" + byteArrayToString(test_binary_value) + "' should be 'FFE0'");
-        }
-
-        res = res && unsetStorageValue("test_key");
-        res = res && unsetStorageValue("test_binary_key");
-
-        if (!res) {
-            for (String key : cacheMap.keySet()) {
-                this.core.logWarning(key + " :: " + cacheMap.get(key));
-            }
-        }
-
-        return res;
     }
 }

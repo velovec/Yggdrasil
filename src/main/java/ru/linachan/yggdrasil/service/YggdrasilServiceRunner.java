@@ -49,7 +49,7 @@ public class YggdrasilServiceRunner {
         }
     }
 
-    public void shutdownServices() {
+    public void shutdown() {
         for (String serviceName: serviceMap.keySet()) {
             stopService(serviceName, false);
         }

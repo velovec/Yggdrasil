@@ -2,21 +2,44 @@ package ru.linachan.jormungand;
 
 import ru.linachan.util.Pair;
 import ru.linachan.yggdrasil.YggdrasilCore;
+import ru.linachan.yggdrasil.component.YggdrasilComponent;
 
 import java.util.*;
 
-public class JormungandCore {
+public class JormungandCore extends YggdrasilComponent {
 
-    private YggdrasilCore core;
     private Map<Long, JormungandSubProcess> processList = new HashMap<>();
     private JormungandExecutor processExecutor;
 
-    public JormungandCore(YggdrasilCore yggdrasilCore) {
-        this.core = yggdrasilCore;
-        this.core.logInfo("Initializing Jormungand Shell Executor...");
+    @Override
+    protected void onInit() {
+        processExecutor = new JormungandExecutor();
+        core.startService(processExecutor);
+    }
 
-        this.processExecutor = new JormungandExecutor(core, this);
-        new Thread(this.processExecutor).start();
+    @Override
+    protected void onShutdown() {
+
+    }
+
+    @Override
+    public boolean executeTests() {
+        Long pid = prepareExecution("ls", "-l");
+
+        scheduleExecution(pid);
+
+        JormungandSubProcess process = waitFor(pid);
+
+        Integer retVal = process.getReturnCode();
+
+        if (retVal > 0) {
+            core.logWarning("EXIT_CODE: " + retVal);
+            for (String line : process.getProcessOutput()) {
+                core.logWarning("OUT: " + line);
+            }
+        }
+
+        return retVal == 0;
     }
 
     private Long generateProcessID() {
@@ -50,14 +73,14 @@ public class JormungandCore {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                this.core.logException(e);
+                core.logException(e);
             }
         }
         return process;
     }
 
     public Long prepareExecution(String... cmd) {
-        JormungandSubProcess subProcess = new JormungandSubProcess(this.core, cmd);
+        JormungandSubProcess subProcess = new JormungandSubProcess(core, cmd);
         Long subProcessID = generateProcessID();
 
         processList.put(subProcessID, subProcess);
@@ -65,7 +88,7 @@ public class JormungandCore {
     }
 
     public Long prepareExecution(List<String> cmd) {
-        JormungandSubProcess subProcess = new JormungandSubProcess(this.core, cmd);
+        JormungandSubProcess subProcess = new JormungandSubProcess(core, cmd);
         Long subProcessID = generateProcessID();
 
         processList.put(subProcessID, subProcess);
@@ -74,28 +97,5 @@ public class JormungandCore {
 
     public void scheduleExecution(Long subProcessID) {
         processExecutor.schedule(subProcessID);
-    }
-
-    public void shutdownJormungand() {
-        processExecutor.shutdownJormungand();
-    }
-
-    public boolean execute_tests() {
-        Long pid = prepareExecution("ls", "-l");
-
-        scheduleExecution(pid);
-
-        JormungandSubProcess process = waitFor(pid);
-
-        Integer retVal = process.getReturnCode();
-
-        if (retVal > 0) {
-            core.logWarning("EXIT_CODE: " + retVal);
-            for (String line : process.getProcessOutput()) {
-                core.logWarning("OUT: " + line);
-            }
-        }
-
-        return retVal == 0;
     }
 }

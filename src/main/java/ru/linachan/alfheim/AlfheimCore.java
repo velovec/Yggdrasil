@@ -1,16 +1,17 @@
 package ru.linachan.alfheim;
 
-import ru.linachan.yggdrasil.YggdrasilCore;
+import ru.linachan.yggdrasil.component.YggdrasilComponent;
 
-public class AlfheimCore {
+public class AlfheimCore extends YggdrasilComponent {
 
-    private YggdrasilCore yggdrasilCore;
+    @Override
+    protected void onInit() {}
 
-    public AlfheimCore(YggdrasilCore yggdrasilCore) {
-        this.yggdrasilCore = yggdrasilCore;
-    }
+    @Override
+    protected void onShutdown() {}
 
-    public boolean execute_tests() {
+    @Override
+    public boolean executeTests() {
         return true;
     }
 

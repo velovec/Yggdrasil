@@ -1,20 +1,25 @@
 package ru.linachan.midgard;
 
-import ru.linachan.yggdrasil.YggdrasilCore;
+import ru.linachan.yggdrasil.component.YggdrasilComponent;
 
-public class MidgardCore {
+public class MidgardCore extends YggdrasilComponent {
 
-    private YggdrasilCore core;
     private MidgardServer server;
 
-    public MidgardCore(YggdrasilCore core) {
-        this.core = core;
-        this.server = new MidgardServer();
+    @Override
+    protected void onInit() {
+        server = new MidgardServer();
 
-        this.core.startService(this.server);
+        core.startService(server);
     }
 
-    public boolean execute_tests() {
-        return this.server.isRunning();
+    @Override
+    protected void onShutdown() {
+
+    }
+
+    @Override
+    public boolean executeTests() {
+        return server.isRunning();
     }
 }

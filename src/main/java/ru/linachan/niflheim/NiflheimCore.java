@@ -1,17 +1,20 @@
 package ru.linachan.niflheim;
 
-import ru.linachan.yggdrasil.YggdrasilCore;
+import ru.linachan.yggdrasil.component.YggdrasilComponent;
 
-public class NiflheimCore {
+public class NiflheimCore extends YggdrasilComponent {
 
-    private YggdrasilCore core;
+    @Override
+    protected void onInit() {
 
-    public NiflheimCore(YggdrasilCore yggdrasilCore) {
-        this.core = yggdrasilCore;
-
-        this.core.logInfo("Initializing Niflheim Security System...");
     }
 
+    @Override
+    protected void onShutdown() {
+
+    }
+
+    @Override
     public boolean executeTests() {
         return true;
     }

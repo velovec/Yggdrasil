@@ -10,14 +10,14 @@ import java.util.List;
 
 public class LokiDriver {
 
-    private YggdrasilCore yggdrasilCore;
-    private LokiCore lokiCore;
+    private YggdrasilCore core;
+    private LokiCore browser;
 
     private WebDriver webDriver;
 
-    public LokiDriver(YggdrasilCore yggdrasilCore, LokiCore lokiCore) {
-        this.yggdrasilCore = yggdrasilCore;
-        this.lokiCore = lokiCore;
+    public LokiDriver(YggdrasilCore core, LokiCore browser) {
+        this.core = core;
+        this.browser = browser;
 
         webDriver = new FirefoxDriver();
         webDriver.manage().window().maximize();

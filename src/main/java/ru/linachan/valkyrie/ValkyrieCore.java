@@ -1,50 +1,41 @@
 package ru.linachan.valkyrie;
 
 import com.rabbitmq.client.ConnectionFactory;
-import ru.linachan.yggdrasil.YggdrasilCore;
+import ru.linachan.yggdrasil.component.YggdrasilComponent;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 
-public class ValkyrieCore {
-
-    private YggdrasilCore core;
+public class ValkyrieCore extends YggdrasilComponent {
 
     private ConnectionFactory rabbitConnectionFactory = null;
 
-    public ValkyrieCore(YggdrasilCore yggdrasilCore) {
-        this.core = yggdrasilCore;
+    @Override
+    protected void onInit() {
+        String rabbitHost = core.getConfig("ValkyrieRabbitMQHost", "127.0.0.1");
+        Integer rabbitPort = Integer.parseInt(core.getConfig("ValkyrieRabbitMQPort", "5572"));
 
-        this.core.logInfo("Initializing Valkyrie Interaction System...");
+        String rabbitVirtualHost = core.getConfig("ValkyrieRabbitMQVirtualHost", "/");
 
-        String rabbitHost = this.core.getConfig("ValkyrieRabbitMQHost", "127.0.0.1");
-        Integer rabbitPort = Integer.parseInt(this.core.getConfig("ValkyrieRabbitMQPort", "5572"));
+        String rabbitUser = core.getConfig("ValkyrieRabbitMQUser", "valkyrie");
+        String rabbitPassword = core.getConfig("ValkyrieRabbitMQPassword", "valkyriePassword");
 
-        String rabbitVirtualHost = this.core.getConfig("ValkyrieRabbitMQVirtualHost", "/");
+        rabbitConnectionFactory = new ConnectionFactory();
 
-        String rabbitUser = this.core.getConfig("ValkyrieRabbitMQUser", "valkyrie");
-        String rabbitPassword = this.core.getConfig("ValkyrieRabbitMQPassword", "valkyriePassword");
+        rabbitConnectionFactory.setUsername(rabbitUser);
+        rabbitConnectionFactory.setPassword(rabbitPassword);
+        rabbitConnectionFactory.setVirtualHost(rabbitVirtualHost);
+        rabbitConnectionFactory.setHost(rabbitHost);
+        rabbitConnectionFactory.setPort(rabbitPort);
+    }
 
-        this.rabbitConnectionFactory = new ConnectionFactory();
-
-        this.rabbitConnectionFactory.setUsername(rabbitUser);
-        this.rabbitConnectionFactory.setPassword(rabbitPassword);
-        this.rabbitConnectionFactory.setVirtualHost(rabbitVirtualHost);
-        this.rabbitConnectionFactory.setHost(rabbitHost);
-        this.rabbitConnectionFactory.setPort(rabbitPort);
+    @Override
+    protected void onShutdown() {
 
     }
 
-    public ValkyrieMessaging getMessenger() {
-        try {
-            return new ValkyrieMessaging(this.core, this.rabbitConnectionFactory.newConnection());
-        } catch (TimeoutException | IOException e) {
-            this.core.logException(e);
-            return null;
-        }
-    }
-
+    @Override
     public boolean executeTests() {
         try {
             ValkyrieMessaging msg = getMessenger();
@@ -67,5 +58,14 @@ public class ValkyrieCore {
             core.logException(e);
         }
         return false;
+    }
+
+    public ValkyrieMessaging getMessenger() {
+        try {
+            return new ValkyrieMessaging(core, rabbitConnectionFactory.newConnection());
+        } catch (TimeoutException | IOException e) {
+            core.logException(e);
+            return null;
+        }
     }
 }

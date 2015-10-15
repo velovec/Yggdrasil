@@ -1,6 +1,6 @@
 package ru.linachan.fenrir;
 
-import ru.linachan.yggdrasil.YggdrasilCore;
+import ru.linachan.yggdrasil.component.YggdrasilComponent;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -12,9 +12,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Random;
 
-public class FenrirCore {
-
-    private YggdrasilCore core;
+public class FenrirCore extends YggdrasilComponent {
 
     private String ldapServer;
     private String ldapBaseDN;
@@ -24,28 +22,35 @@ public class FenrirCore {
 
     private Map<String, FenrirSession> sessions = new HashMap<String, FenrirSession>();
 
-    public FenrirCore(YggdrasilCore core) {
-        this.core = core;
+    @Override
+    protected void onInit() {
+        ldapServer     = core.getConfig("FenrirLDAPServer", "127.0.0.1");
+        ldapBaseDN     = core.getConfig("FenrirLDAPBaseDN", "DC=EXAMPLE,DC=COM");
+        ldapBaseDomain = core.getConfig("FenrirLDAPBaseDomain", "EXAMPLE");
+        ldapAdminGroup = core.getConfig("FenrirLDAPAdminGroup", "CN=Administrators,DC=EXAMPLE,DC=COM");
+        ldapUserGroup  = core.getConfig("FenrirLDAPUserGroup", "CN=User,DC=EXAMPLE,DC=COM");
+    }
 
-        this.ldapServer     = this.core.getConfig("FenrirLDAPServer", "127.0.0.1");
-        this.ldapBaseDN     = this.core.getConfig("FenrirLDAPBaseDN", "DC=EXAMPLE,DC=COM");
-        this.ldapBaseDomain = this.core.getConfig("FenrirLDAPBaseDomain", "EXAMPLE");
-        this.ldapAdminGroup = this.core.getConfig("FenrirLDAPAdminGroup", "CN=Administrators,DC=EXAMPLE,DC=COM");
-        this.ldapUserGroup  = this.core.getConfig("FenrirLDAPUserGroup", "CN=User,DC=EXAMPLE,DC=COM");
+    @Override
+    protected void onShutdown() {
 
-        this.core.logInfo("Initializing Fenrir Auth System...");
+    }
+
+    @Override
+    public boolean executeTests() {
+        return true;
     }
 
     public boolean checkAuth(String token) {
-        return this.sessions.containsKey(token);
+        return sessions.containsKey(token);
     }
 
     private SearchResult authViaLDAP(String username, String password) {
         Hashtable<String, Object> env = new Hashtable<String, Object>(11);
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        env.put(Context.PROVIDER_URL, this.ldapServer);
+        env.put(Context.PROVIDER_URL, ldapServer);
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
-        env.put(Context.SECURITY_PRINCIPAL, this.ldapBaseDomain + "\\" + username);
+        env.put(Context.SECURITY_PRINCIPAL, ldapBaseDomain + "\\" + username);
         env.put(Context.SECURITY_CREDENTIALS, password);
 
         DirContext context = null;
@@ -53,7 +58,7 @@ public class FenrirCore {
         try {
             context = new InitialDirContext(env);
         } catch (NamingException e) {
-            this.core.logWarning("LDAPAuthException: " + e.getMessage());
+            core.logWarning("LDAPAuthException: " + e.getMessage());
         }
 
         SearchResult result = null;
@@ -65,19 +70,19 @@ public class FenrirCore {
 
                 String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";
 
-                NamingEnumeration<SearchResult> results = context.search(this.ldapBaseDN, searchFilter, searchControls);
+                NamingEnumeration<SearchResult> results = context.search(ldapBaseDN, searchFilter, searchControls);
 
                 if(results.hasMoreElements()) {
                     result = results.nextElement();
 
                     if(results.hasMoreElements()) {
-                        this.core.logWarning("LDAPAuthWarning:: More than one record found.");
+                        core.logWarning("LDAPAuthWarning:: More than one record found.");
                     }
                 }
 
                 context.close();
             } catch (NamingException e) {
-                this.core.logWarning("LDAPAuthException: " + e.getExplanation());
+                core.logWarning("LDAPAuthException: " + e.getExplanation());
             }
         }
         return result;
@@ -86,11 +91,11 @@ public class FenrirCore {
     public FenrirUser auth(String username, String password) throws NamingException {
         FenrirUser user = null;
 
-        SearchResult result = this.authViaLDAP(username, password);
+        SearchResult result = authViaLDAP(username, password);
 
         if (result != null) {
             user = new FenrirUser(result);
-            if (user.inGroup(this.ldapUserGroup)) {
+            if (user.inGroup(ldapUserGroup)) {
                 return user;
             }
         }
@@ -103,20 +108,20 @@ public class FenrirCore {
 
         String token = session.getToken();
 
-        this.sessions.put(token, session);
+        sessions.put(token, session);
 
         return token;
     }
 
     public FenrirSession getSessionInfo(String token) {
-        if (this.sessions.containsKey(token))
-            return this.sessions.get(token);
+        if (sessions.containsKey(token))
+            return sessions.get(token);
         return null;
     }
 
     public boolean closeSession(String token) {
-        if(this.sessions.containsKey(token)) {
-            this.sessions.remove(token);
+        if(sessions.containsKey(token)) {
+            sessions.remove(token);
             return true;
         } else {
             return false;
@@ -136,7 +141,7 @@ public class FenrirCore {
         String token;
         while (true) {
             token = getRandomHexString();
-            if (!this.sessions.containsKey(token)) {
+            if (!sessions.containsKey(token)) {
                 break;
             }
         }
@@ -144,11 +149,7 @@ public class FenrirCore {
     }
 
     public boolean isAdmin(String token) {
-        FenrirUser user = this.getSessionInfo(token).getUser();
-        return user != null && user.inGroup(this.ldapAdminGroup);
-    }
-
-    public boolean executeTests() {
-        return true;
+        FenrirUser user = getSessionInfo(token).getUser();
+        return user != null && user.inGroup(ldapAdminGroup);
     }
 }

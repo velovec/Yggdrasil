@@ -15,8 +15,12 @@ public class YggdrasilComponentManager {
     }
 
     public void registerComponent(YggdrasilComponent component) {
-        components.put(component.getName(), component);
-        component.initializeComponent(core);
+        if (Boolean.valueOf(core.getConfig(component.getName().replace("Core", "Enabled"), "false"))) {
+            components.put(component.getName(), component);
+            component.initializeComponent(core);
+        } else {
+            core.logInfo("YggdrasilComponentManager: Skipping " + component.getName() + ": disabled");
+        }
     }
 
     public YggdrasilComponent getComponent(String componentName) {

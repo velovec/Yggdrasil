@@ -1,7 +1,5 @@
 package ru.linachan.yggdrasil;
 
-import org.jooq.DSLContext;
-import ru.linachan.asgard.orm.Tables;
 import ru.linachan.yggdrasil.service.YggdrasilService;
 
 import java.net.DatagramSocket;
@@ -9,7 +7,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Random;
 
 public class YggdrasilAgentServer extends YggdrasilService {
 
@@ -58,44 +55,12 @@ public class YggdrasilAgentServer extends YggdrasilService {
         return resultString;
     }
 
-    private Integer countAgents() {
-        DSLContext context = core.getDBManager().getContext();
-        return context.select().from(Tables.AGENT_DATA).fetchCount();
-    }
-
-    private byte[] registerAgent(String osName, String osVer, Long totalMem, String cpuName, Integer cpuCores) {
-        byte[] accessToken = new byte[8];
-        new Random().nextBytes(accessToken);
-
-        DSLContext context = core.getDBManager().getContext();
-        context.insertInto(
-            Tables.AGENT_DATA,
-            Tables.AGENT_DATA.OS_NAME,
-            Tables.AGENT_DATA.OS_VERSION,
-            Tables.AGENT_DATA.TOTAL_RAM,
-            Tables.AGENT_DATA.CPU_NAME,
-            Tables.AGENT_DATA.CPU_CORES,
-            Tables.AGENT_DATA.ACCESS_TOKEN
-        ).values(
-                osName, osVer, totalMem, cpuName, cpuCores, byteArrayToString(accessToken)
-        ).execute();
-
-        return accessToken;
-    }
-
     private YggdrasilPacket process(YggdrasilPacket request) {
         YggdrasilPacket response = new YggdrasilPacket(request.opCode, request.subOpCode, request.token, null);
         if (request.opCode == (byte)0x00) {
             if (Arrays.equals(request.token, new byte[8])) {
                 core.logInfo("YggdrasilAgentServer: New agent found:");
                 core.logInfo("\tIP: " + request.address.getHostAddress());
-                response.token = registerAgent(
-                    request.parameters.get("OS_NAME"),
-                    request.parameters.get("OS_VERSION"),
-                    Long.parseLong(request.parameters.get("TOTAL_MEM")),
-                    request.parameters.get("CPU_NAME"),
-                    Integer.parseInt(request.parameters.get("CPU_CORES"))
-                );
             }
         }
         return response;
@@ -104,7 +69,6 @@ public class YggdrasilAgentServer extends YggdrasilService {
     @Override
     protected void onInit() {
         core.logInfo("YggdrasilAgentServer: Initializing YggdrasilAgentServer...");
-        core.logInfo("YggdrasilAgentServer: " + String.valueOf(countAgents()) + " agent(s) registered");
 
         try {
             this.serverHost = InetAddress.getByName(core.getConfig("YggdrasilAgentHost", "0.0.0.0"));

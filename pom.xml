@@ -72,6 +72,11 @@
             <artifactId>commons-math3</artifactId>
             <version>3.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.libvirt</groupId>
+            <artifactId>libvirt</artifactId>
+            <version>0.5.1</version>
+        </dependency>
     </dependencies>
 
     <build>

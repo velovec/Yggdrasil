@@ -1,6 +1,5 @@
 package ru.linachan.midgard;
 
-import ru.linachan.midgard.handler.api.ImageBuilderAPI;
 import ru.linachan.midgard.handler.html.LoginPage;
 import ru.linachan.midgard.handler.html.TemplatePage;
 import ru.linachan.midgard.handler.html.StaticFiles;
@@ -28,7 +27,6 @@ public class MidgardHTTPRouter {
         addRoute("^/login/$", new LoginPage());
 
         // API
-        addRoute("^/api/image/(.*?)$", new ImageBuilderAPI());
     }
 
     private void addRoute(String routePattern, MidgardRequestHandler handler) {

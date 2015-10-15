@@ -1,7 +1,6 @@
 package ru.linachan.yggdrasil;
 
 import ru.linachan.alfheim.AlfheimCore;
-import ru.linachan.asgard.AsgardCore;
 import ru.linachan.bifrost.BifrostCore;
 import ru.linachan.fenrir.FenrirCore;
 import ru.linachan.jormungand.JormungandCore;
@@ -27,7 +26,6 @@ import java.util.logging.Logger;
 
 public class YggdrasilCore {
 
-    private AsgardCore db;
     private NiflheimCore security;
     private ValkyrieCore broker;
     private FenrirCore auth;
@@ -37,7 +35,7 @@ public class YggdrasilCore {
     private LokiCore browser;
     private BifrostCore bridge;
     private ValhallaCore scheduler;
-    private SkuldCore voice;
+    private SkuldCore spectrum;
     private MidgardCore api;
 
     private YggdrasilShutdownHook shutdownHook;
@@ -75,14 +73,13 @@ public class YggdrasilCore {
         this.scheduler  = new ValhallaCore(this);   // Instantiate scheduler
         this.executor   = new JormungandCore(this); // Instantiate executor system
         this.cache      = new UrdCore(this);        // Instantiate cache system
-        this.db         = new AsgardCore(this);     // Instantiate main data storage system
         this.broker     = new ValkyrieCore(this);   // Instantiate main message transport system
         this.auth       = new FenrirCore(this);     // Instantiate main authorization system
         this.security   = new NiflheimCore(this);   // Instantiate main security system
         this.builder    = new AlfheimCore(this);    // Instantiate image builder
         this.browser    = new LokiCore(this);       // Instantiate web browser driver
         this.bridge     = new BifrostCore(this);    // Instantiate peripheral bridge
-        this.voice      = new SkuldCore(this);      // Instantiate real-time voice processor
+        this.spectrum   = new SkuldCore(this);      // Instantiate real-time audio processor
         this.api        = new MidgardCore(this);    // Instantiate API server
 
         this.originalOutput = System.out;
@@ -166,9 +163,6 @@ public class YggdrasilCore {
     public boolean executeTests() {
         logInfo("YggdrasilCore: Initializing self-diagnostic");
 
-        boolean dbOk = this.db.executeTests();
-        logInfo("AsgardCore: " + ((dbOk) ? "PASS" : "FAIL"));
-
         boolean securityOk = this.security.executeTests();
         logInfo("NiflheimCore: " + ((securityOk) ? "PASS" : "FAIL"));
 
@@ -196,13 +190,13 @@ public class YggdrasilCore {
         boolean schedulerOk = this.scheduler.execute_tests();
         logInfo("ValhallaCore: " + ((schedulerOk) ? "PASS" : "FAIL"));
 
-        boolean voiceOk = this.voice.execute_tests();
-        logInfo("SkuldCore: " + ((voiceOk) ? "PASS" : "FAIL"));
+        boolean spectrumOk = this.spectrum.execute_tests();
+        logInfo("SkuldCore: " + ((spectrumOk) ? "PASS" : "FAIL"));
 
         boolean apiOk = this.api.execute_tests();
         logInfo("MidgardCore: " + ((apiOk) ? "PASS" : "FAIL"));
 
-        if (dbOk && securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk && browserOk && bridgeOk && schedulerOk && voiceOk && apiOk) {
+        if (securityOk && brokerOk && authOk && executorOk && cacheOk && builderOk && browserOk && bridgeOk && schedulerOk && spectrumOk && apiOk) {
             logInfo("YggdrasilCore: Self-diagnostic successfully completed");
             return true;
         } else {
@@ -218,10 +212,6 @@ public class YggdrasilCore {
 
     public boolean isRunningYggdrasil() {
         return runningYggdrasil;
-    }
-
-    public AsgardCore getDBManager() {
-        return db;
     }
 
     public FenrirCore getAuthManager() {
@@ -254,7 +244,7 @@ public class YggdrasilCore {
 
     public ValhallaCore getScheduler() { return scheduler; }
 
-    public SkuldCore getVoiceProcessor() {
-        return voice;
+    public SkuldCore getAudioProcessor() {
+        return spectrum;
     }
 }

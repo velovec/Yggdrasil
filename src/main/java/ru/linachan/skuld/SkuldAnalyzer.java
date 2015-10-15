@@ -11,6 +11,8 @@ public class SkuldAnalyzer {
     private double heterodinAccuracy;
     private int windowSize;
 
+    private final int MAX_CUT = 10;
+
     public SkuldAnalyzer(SkuldSignal sourceSignal, double minimalAmplitude, double heterodinAccuracy, int windowSize) {
         this.sourceSignal = sourceSignal;
         this.minimalAmplitude = minimalAmplitude;
@@ -30,11 +32,11 @@ public class SkuldAnalyzer {
 
         int harmonic;
         while ((harmonic = signalSpectrum.detectStrongPeak(minimalAmplitude)) != -1) {
-            if (signalCutter.getCuttersCount() > 10) {
-                throw new RuntimeException("SkuldAnalyzer: Unable to process requested signal");
+            if (signalCutter.getCuttersCount() > MAX_CUT) {
+                return null;
             }
 
-            double heterodineSelected = 0.0;
+            double heterodinSelected = 0.0;
             double noiseLevel = signalSpectrum.getAmplitude(harmonic) / signalSpectrum.getAverageAmplitude(harmonic, windowSize);
 
             for (double heterodinFrequency = -0.5; heterodinFrequency < (0.5 + heterodinAccuracy); heterodinFrequency += heterodinAccuracy) {
@@ -50,13 +52,13 @@ public class SkuldAnalyzer {
 
                 if (reCalculatedNoiseLevel > noiseLevel) {
                     noiseLevel = reCalculatedNoiseLevel;
-                    heterodineSelected = heterodinFrequency;
+                    heterodinSelected = heterodinFrequency;
                 }
             }
 
             SkuldSynthesizableCosine cutterParameters = new SkuldSynthesizableCosine();
 
-            heterodinParameter.setProperty("frequency", heterodineSelected);
+            heterodinParameter.setProperty("frequency", heterodinSelected);
             heterodinParameter.synthesize(heterodinSignal);
 
             heterodinedSignal.copyFrom(signalCutter.getTargetSignal());
@@ -65,7 +67,7 @@ public class SkuldAnalyzer {
             signalSpectrum.reCalculate();
 
             cutterParameters.setProperty("amplitude", MathHelper.adaptiveRound(signalSpectrum.getAverageAmplitude(harmonic, windowSize)));
-            cutterParameters.setProperty("frequency", harmonic - heterodineSelected);
+            cutterParameters.setProperty("frequency", harmonic - heterodinSelected);
             cutterParameters.setProperty("phase", MathHelper.round(signalSpectrum.getPhase(harmonic), 1));
 
             signalCutter.addCutter(cutterParameters);

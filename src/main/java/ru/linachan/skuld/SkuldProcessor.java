@@ -11,7 +11,9 @@ import java.util.Set;
 public class SkuldProcessor extends YggdrasilService {
 
     private TargetDataLine audioLine;
-    private Set<SkuldSignal> samples;
+
+    private SkuldCore analyzer;
+
     private Integer sampleRate;
     private Integer sampleBytes;
 
@@ -21,17 +23,17 @@ public class SkuldProcessor extends YggdrasilService {
 
     @Override
     protected void onInit() {
-        this.samples = new HashSet<>();
+        analyzer = core.getComponent(SkuldCore.class);
 
         AudioFormat audioFormat = audioLine.getFormat();
 
-        this.sampleRate = (int) audioFormat.getSampleRate();
-        this.sampleBytes = audioFormat.getSampleSizeInBits() / 8;
+        sampleRate = (int) audioFormat.getSampleRate();
+        sampleBytes = audioFormat.getSampleSizeInBits() / 8;
     }
 
     @Override
     protected void onShutdown() {
-        this.core.logInfo("SkuldProcessor: " + samples.size() + " samples collected");
+
     }
 
     @Override
@@ -43,8 +45,7 @@ public class SkuldProcessor extends YggdrasilService {
 
                 audioLine.read(samples[sampleNumber], 0, sampleBytes);
             }
-            SkuldSignal sample = new SkuldSignal(samples);
-            this.samples.add(sample);
+            analyzer.pushSignal(new SkuldSignal(samples));
         }
     }
 }

@@ -4,11 +4,14 @@ import ru.linachan.yggdrasil.component.YggdrasilComponent;
 
 import javax.sound.sampled.*;
 import javax.sound.sampled.AudioFormat.Encoding;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SkuldCore extends YggdrasilComponent {
 
     private TargetDataLine audioLine;
     private SkuldListener lineListener;
+    private List<SkuldSignal> signals = new ArrayList<>();
 
     private int sampleRate;
     private int sampleBits;
@@ -32,13 +35,25 @@ public class SkuldCore extends YggdrasilComponent {
     public boolean executeTests() {
         startListening();
         try {
-            Thread.sleep(10000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             core.logException(e);
         }
         stopListening();
 
-        return true;
+        if (signals.size() > 0) {
+            SkuldAnalyzer signalAnalyzer = new SkuldAnalyzer(signals.get(0), 0.0, 0.1, 10);
+            List<SkuldSynthesizableSignal> analysis = signalAnalyzer.detectHarmonics();
+
+            if (analysis != null) {
+                for(SkuldSynthesizableSignal signalCutter: analysis) {
+                    core.logInfo(signalCutter.getProperties().toString());
+                }
+            }
+
+            return true;
+        }
+        return false;
     }
 
     private void initializeAudioSystem() {
@@ -87,5 +102,9 @@ public class SkuldCore extends YggdrasilComponent {
         if (isLineActive()) {
             audioLine.stop();
         }
+    }
+
+    public void pushSignal(SkuldSignal signal) {
+        this.signals.add(signal);
     }
 }

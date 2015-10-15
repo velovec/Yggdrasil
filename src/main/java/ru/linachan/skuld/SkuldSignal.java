@@ -27,19 +27,30 @@ public class SkuldSignal {
         }
     }
 
-    public Complex[] getSamples() {
-        return samples;
+    public SkuldSignal(SkuldSignal sourceSignal) {
+        copyFrom(sourceSignal);
     }
 
     public void copyFrom(SkuldSignal sourceSignal) {
-        this.samples = sourceSignal.getSamples();
+        samples = sourceSignal.getSamples();
     }
 
     public void subtract(SkuldSignal targetSignal) {
         if (this.sampleRate() == targetSignal.sampleRate()) {
             Complex[] targetSamples = targetSignal.getSamples();
             for (int sampleID = 0; sampleID < sampleRate(); sampleID++) {
-                this.samples[sampleID].subtract(targetSamples[sampleID]);
+                samples[sampleID].subtract(targetSamples[sampleID]);
+            }
+        } else {
+            throw new RuntimeException("SkuldSignals should have the same sample rate!");
+        }
+    }
+
+    public void multiply(SkuldSignal targetSignal) {
+        if (this.sampleRate() == targetSignal.sampleRate()) {
+            Complex[] targetSamples = targetSignal.getSamples();
+            for (int sampleID = 0; sampleID < sampleRate(); sampleID++) {
+                samples[sampleID].multiply(targetSamples[sampleID]);
             }
         } else {
             throw new RuntimeException("SkuldSignals should have the same sample rate!");
@@ -48,5 +59,21 @@ public class SkuldSignal {
 
     public int sampleRate() {
         return samples.length;
+    }
+
+    public Complex[] getSamples() {
+        return samples;
+    }
+
+    public Complex getSample(int sampleID) {
+        return samples[sampleID];
+    }
+
+    public void setSample(int sampleID, Complex sampleValue) {
+        samples[sampleID] = sampleValue;
+    }
+
+    public void setSample(int sampleID, double realValue, double imaginaryValue) {
+        samples[sampleID] = new Complex(realValue, imaginaryValue);
     }
 }

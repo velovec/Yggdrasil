@@ -5,15 +5,13 @@ import ru.linachan.yggdrasil.YggdrasilCore;
 public abstract class YggdrasilComponent {
 
     protected YggdrasilCore core;
-    private String componentName;
 
     public void initializeComponent(YggdrasilCore core) {
         this.core = core;
 
         onInit();
 
-        this.componentName = this.getClass().getSimpleName();
-        this.core.logInfo(componentName + " initialized");
+        this.core.logInfo(this.getClass().getSimpleName() + " initialized");
     }
 
     protected abstract void onInit();
@@ -23,10 +21,10 @@ public abstract class YggdrasilComponent {
     public abstract boolean executeTests();
 
     public void shutdown() {
-        this.core.logWarning(componentName + " is ready for shutdown");
+        this.core.logWarning(this.getClass().getSimpleName() + " is ready for shutdown");
     }
 
     public String getName() {
-        return componentName;
+        return this.getClass().getSimpleName();
     }
 }

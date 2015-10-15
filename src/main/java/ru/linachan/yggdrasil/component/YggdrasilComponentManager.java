@@ -16,6 +16,7 @@ public class YggdrasilComponentManager {
 
     public void registerComponent(YggdrasilComponent component) {
         components.put(component.getName(), component);
+        component.initializeComponent(core);
     }
 
     public YggdrasilComponent getComponent(String componentName) {
@@ -32,26 +33,28 @@ public class YggdrasilComponentManager {
     public boolean executeTests() {
         boolean testsResult = true;
 
-        core.logInfo("YggdrasilCore: Initializing self-diagnostic");
+        core.logInfo("YggdrasilComponentManager: Initializing self-diagnostic");
 
         for (String componentName: components.keySet()) {
             boolean componentResult = components.get(componentName).executeTests();
 
-            core.logInfo(componentName + ((componentResult) ? "PASS" : "FAIL"));
+            core.logInfo(componentName + ": " + ((componentResult) ? "PASS" : "FAIL"));
 
             testsResult = testsResult && componentResult;
         }
 
         if (testsResult) {
-            core.logInfo("YggdrasilCore: Self-diagnostic successfully completed");
+            core.logInfo("YggdrasilComponentManager: Self-diagnostic successfully completed");
         } else {
-            core.logWarning("YggdrasilCore: Self-diagnostic failed");
+            core.logWarning("YggdrasilComponentManager: Self-diagnostic failed");
         }
 
         return testsResult;
     }
 
     public void shutdown() {
-
+        for (String componentName: components.keySet()) {
+            components.get(componentName).shutdown();
+        }
     }
 }

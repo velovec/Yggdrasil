@@ -114,13 +114,15 @@ public class YggdrasilCore {
             while (runningYggdrasil) {
                 Thread.sleep(1000);
             }
+
             logInfo("Yggdrasil main loop finished. Waiting another services to finish...");
 
-            serviceRunner.shutdown();
-            componentManager.shutdown();
         } else {
             shutdownYggdrasil();
         }
+
+        serviceRunner.shutdown();
+        componentManager.shutdown();
 
         logInfo("Yggdrasil is down...");
     }

@@ -6,7 +6,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
-public class JormungandExecutor extends YggdrasilService implements Runnable {
+public class JormungandExecutor extends YggdrasilService {
 
     private JormungandCore executor;
     private Queue<Long> processQueue = new PriorityQueue<>();
@@ -21,14 +21,15 @@ public class JormungandExecutor extends YggdrasilService implements Runnable {
             while (core.isRunningYggdrasil()) {
                 if (!processQueue.isEmpty()) {
                     executorLock.acquire();
-                    runningProcess = processQueue.remove();
+                    if ((runningProcess = processQueue.remove()) != null) {
 
-                    JormungandSubProcess subProcess = executor.getProcess(runningProcess);
+                        JormungandSubProcess subProcess = executor.getProcess(runningProcess);
 
-                    subProcess.run();
+                        subProcess.run();
 
-                    core.logInfo("JormungandExecutor: Process ID" + runningProcess + " finished with EXIT_CODE: " + subProcess.getReturnCode());
-                    runningProcess = null;
+                        core.logInfo("JormungandExecutor: Process ID" + runningProcess + " finished with EXIT_CODE: " + subProcess.getReturnCode());
+                        runningProcess = null;
+                    }
                     executorLock.release();
                 }
                 Thread.sleep(100);

@@ -27,7 +27,7 @@ public class SkuldListener implements LineListener {
             case "Stop":
                 this.core.logInfo("SkuldListener: Voice processing stopped");
 
-                this.core.stopService("SkuldProcessor", true);
+                this.core.stopService("SkuldProcessor", false);
                 this.processor = null;
 
                 break;

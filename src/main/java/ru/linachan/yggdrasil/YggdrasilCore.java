@@ -1,6 +1,5 @@
 package ru.linachan.yggdrasil;
 
-import ru.linachan.alfheim.AlfheimCore;
 import ru.linachan.bifrost.BifrostCore;
 import ru.linachan.fenrir.FenrirCore;
 import ru.linachan.jormungand.JormungandCore;
@@ -63,7 +62,6 @@ public class YggdrasilCore {
         componentManager.registerComponent(new ValkyrieCore());   // Instantiate main message transport system
         componentManager.registerComponent(new FenrirCore());     // Instantiate main authorization system
         componentManager.registerComponent(new NiflheimCore());   // Instantiate main security system
-        componentManager.registerComponent(new AlfheimCore());    // Instantiate hypervisor manager
         componentManager.registerComponent(new LokiCore());       // Instantiate web browser driver
         componentManager.registerComponent(new BifrostCore());    // Instantiate peripheral bridge
         componentManager.registerComponent(new SkuldCore());      // Instantiate real-time audio processor

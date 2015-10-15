@@ -15,7 +15,13 @@ public class YggdrasilComponentManager {
     }
 
     public void registerComponent(YggdrasilComponent component) {
-        if (Boolean.valueOf(core.getConfig(component.getName().replace("Core", "Enabled"), "false"))) {
+        registerComponent(component, false);
+    }
+
+    public void registerComponent(YggdrasilComponent component, boolean registerIfDisabled) {
+        boolean isComponentEnabled = Boolean.valueOf(core.getConfig(component.getName().replace("Core", "Enabled"), "false"));
+
+        if (isComponentEnabled||registerIfDisabled) {
             components.put(component.getName(), component);
             component.initializeComponent(core);
         } else {
@@ -23,15 +29,21 @@ public class YggdrasilComponentManager {
         }
     }
 
-    public YggdrasilComponent getComponent(String componentName) {
-        if (components.containsKey(componentName)) {
-            return components.get(componentName);
+    public <T extends YggdrasilComponent> void unRegisterComponent(Class<T> component) {
+        if (componentRegistered(component)) {
+            components.remove(component.getSimpleName());
+        }
+    }
+
+    public <T extends YggdrasilComponent> YggdrasilComponent getComponent(Class<T> component) {
+        if (components.containsKey(component.getSimpleName())) {
+            return components.get(component.getSimpleName());
         }
         return null;
     }
 
-    public boolean componentRegistered(String componentName) {
-        return components.containsKey(componentName);
+    public <T extends YggdrasilComponent> boolean componentRegistered(Class<T> component) {
+        return components.containsKey(component.getSimpleName());
     }
 
     public boolean executeTests() {

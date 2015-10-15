@@ -144,9 +144,25 @@ public class YggdrasilCore {
         return runningYggdrasil;
     }
 
+    public <T extends YggdrasilComponent> void enableComponent(Class<T> component, boolean evenIfDisabled) {
+        try {
+            componentManager.registerComponent(component.newInstance(), evenIfDisabled);
+        } catch (InstantiationException | IllegalAccessException e) {
+            logException(e);
+        }
+    }
+
+    public <T extends YggdrasilComponent> void disableComponent(Class<T> component) {
+        componentManager.unRegisterComponent(component);
+    }
+
+    public <T extends YggdrasilComponent> boolean componentEnabled(Class<T> component) {
+        return componentManager.componentRegistered(component);
+    }
+
     public <T extends YggdrasilComponent> T getComponent(Class<T> component) {
-        if (componentManager.componentRegistered(component.getSimpleName())) {
-            return component.cast(componentManager.getComponent(component.getSimpleName()));
+        if (componentManager.componentRegistered(component)) {
+            return component.cast(componentManager.getComponent(component));
         }
         return null;
     }

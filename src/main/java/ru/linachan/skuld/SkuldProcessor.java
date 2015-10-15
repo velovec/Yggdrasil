@@ -11,7 +11,7 @@ import java.util.Set;
 public class SkuldProcessor extends YggdrasilService {
 
     private TargetDataLine audioLine;
-    private Set<SkuldSample> samples;
+    private Set<SkuldSignal> samples;
     private Integer sampleRate;
     private Integer sampleBytes;
 
@@ -43,7 +43,7 @@ public class SkuldProcessor extends YggdrasilService {
 
                 audioLine.read(samples[sampleNumber], 0, sampleBytes);
             }
-            SkuldSample sample = new SkuldSample(samples);
+            SkuldSignal sample = new SkuldSignal(samples);
             this.samples.add(sample);
         }
     }
